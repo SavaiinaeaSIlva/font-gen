@@ -129,9 +129,14 @@
                     </select>
                 </div>
             </div>
-            <button id="generate-theme-btn" class="bg-indigo-700 hover:bg-indigo-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-800">
-                Generate Look
-            </button>
+            <div class="flex items-center gap-2">
+                <button id="generate-theme-btn" class="bg-indigo-700 hover:bg-indigo-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-800">
+                    Generate Look
+                </button>
+                <button id="reset-theme-btn" class="bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-xl transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-gray-700">
+                    Reset
+                </button>
+            </div>
             <p class="text-sm text-gray-500 hidden sm:block">Fonts powered by Netlify Functions proxy.</p>
         </div>
     </header>
@@ -139,7 +144,19 @@
     <main id="theme-dashboard" class="flex-grow container mx-auto p-6 md:p-10 flex flex-col items-center justify-center space-y-6">
 
         <section class="w-full max-w-5xl">
-            <h2 class="text-xl font-semibold text-white mb-4 text-center">Color Palette</h2>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-semibold text-white">Color Palette</h2>
+                <div class="flex items-center gap-2">
+                    <select id="color-format" class="bg-gray-800 text-white text-sm py-2 px-3 rounded-md">
+                        <option value="hex">HEX</option>
+                        <option value="css">CSS</option>
+                        <option value="scss">SCSS</option>
+                    </select>
+                    <button id="copy-colors-btn" class="bg-gray-800 hover:bg-gray-700 text-white text-sm py-2 px-3 rounded-md transition-colors duration-300">
+                        Copy Colors
+                    </button>
+                </div>
+            </div>
             <div id="color-palette" class="grid grid-cols-3 gap-4">
                 </div>
         </section>
@@ -632,10 +649,79 @@
                 if (fontPresetSelect) fontPresetSelect.addEventListener('change', generateTheme);
             };
 
+            // Default theme to reset to
+            const defaultTheme = {
+                primary: '#00bcd4',
+                accent: '#ff9800',
+                cardBackground: '#1a1a1a',
+                headingFont: 'Inter',
+                bodyFont: 'Inter',
+                tertiaryFont: 'Inter'
+            };
+
+            const resetTheme = () => {
+                // Reset locks
+                Object.keys(lockStates).forEach(key => {
+                    lockStates[key] = false;
+                });
+                // Reset dropdowns
+                if (colorPresetSelect) colorPresetSelect.value = 'random';
+                if (fontPresetSelect) fontPresetSelect.value = 'random';
+                // Reset theme
+                lastTheme = { ...defaultTheme };
+                applyTheme(lastTheme);
+            };
+
+            const copyColors = () => {
+                const format = document.getElementById('color-format').value;
+                const colors = {
+                    primary: lastTheme.primary,
+                    accent: lastTheme.accent,
+                    surface: lastTheme.cardBackground
+                };
+                
+                let output = '';
+                switch(format) {
+                    case 'hex':
+                        output = Object.entries(colors)
+                            .map(([name, color]) => `${name}: ${color}`)
+                            .join('\n');
+                        break;
+                    case 'css':
+                        output = `:root {\n${
+                            Object.entries(colors)
+                                .map(([name, color]) => `  --${name}: ${color};`)
+                                .join('\n')
+                        }\n}`;
+                        break;
+                    case 'scss':
+                        output = Object.entries(colors)
+                            .map(([name, color]) => `$${name}: ${color};`)
+                            .join('\n');
+                        break;
+                }
+                
+                navigator.clipboard.writeText(output).then(() => {
+                    const btn = document.getElementById('copy-colors-btn');
+                    const originalText = btn.textContent;
+                    btn.textContent = 'Copied!';
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                    }, 2000);
+                });
+            };
+
             const init = () => {
                 fetchFonts();
                 applyTheme(lastTheme); 
                 attachListeners();
+                
+                // Add new button listeners
+                const resetBtn = document.getElementById('reset-theme-btn');
+                if (resetBtn) resetBtn.addEventListener('click', resetTheme);
+                
+                const copyColorsBtn = document.getElementById('copy-colors-btn');
+                if (copyColorsBtn) copyColorsBtn.addEventListener('click', copyColors);
             };
             
             init();
