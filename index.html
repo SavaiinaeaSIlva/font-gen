@@ -5,25 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>This shit should be free</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://kit.fontawesome.com/a7c9367c3b.js" crossorigin="anonymous"></script> <!-- Font Awesome for Lock Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        /* Force everything black, removing default background and borders */
         body {
             font-family: 'Inter', sans-serif;
-            --transition-speed: 0.5s;
-        }
-        /* Smooth transitions for all themeable elements */
-        #website-preview, #website-preview nav, #website-preview h1, #website-preview h2, #website-preview h3, #website-preview p, #website-preview a, #website-preview footer, #preview-cta-btn {
-            transition: color var(--transition-speed) ease, background-color var(--transition-speed) ease, border-color var(--transition-speed) ease;
+            transition: background-color 0.5s ease;
+            background-color: #000000 !important; /* Pure black body */
         }
         /* Style for the dynamic font loader links */
         #heading-font-loader, #body-font-loader {
             display: none;
         }
+        /* Code Block remains visible for utility, but uses pure black theme colors */
         .code-block {
-            /* Black background for code block, simple border */
-            background-color: #141414; 
+            background-color: #0a0a0a; 
             border: 1px solid #333333;
         }
         /* Custom Message Box styles */
@@ -41,6 +40,38 @@
             opacity: 1;
             visibility: visible;
             transform: translateY(0);
+        }
+        .color-swatch-label {
+            color: var(--text-primary);
+            text-shadow: 0 0 4px #000000;
+        }
+        /* Remove background and shadows from containers */
+        #theme-dashboard, .theme-container-bg {
+            background-color: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+        }
+        /* Make font sample containers transparent */
+        .font-sample-container {
+            background-color: transparent !important;
+            padding: 0;
+        }
+        /* Ensure header retains its dark background for contrast */
+        header {
+            background-color: #0a0a0a !important; 
+            border-bottom: 1px solid #111111;
+        }
+        /* Lock icon styling for interaction */
+        .lock-icon {
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .text-unlocked {
+            color: #ccc;
+        }
+        .text-locked {
+            color: var(--primary); /* Use primary color to highlight lock */
         }
     </style>
 </head>
@@ -60,75 +91,95 @@
         <div class="container mx-auto flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center gap-4">
                 <h1 class="text-2xl font-bold text-white">This shit should be free</h1>
-                <button id="generate-theme-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-5 rounded-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:opacity-50" disabled>
+                <button id="generate-theme-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-5 rounded-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:opacity-50">
                     Generate Look
                 </button>
             </div>
-            <!-- API KEY INPUT FIELD REMOVED FOR NETLIFY SECURITY -->
             <div class="flex items-center text-sm text-gray-400">
                 <p>Fonts powered by Netlify Functions proxy.</p>
             </div>
         </div>
     </header>
 
-    <!-- Live Website Preview -->
-    <main id="website-preview" class="text-gray-300">
-        <!-- Navigation -->
-        <nav id="preview-nav" class="py-5">
-            <div class="container mx-auto flex justify-between items-center px-6">
-                <h2 id="preview-logo" class="text-xl font-bold">ThemeCo</h2>
-                <div class="hidden md:flex items-center space-x-6">
-                    <a href="#" class="preview-nav-link text-sm font-medium hover:opacity-80">Home</a>
-                    <a href="#" class="preview-nav-link text-sm font-medium hover:opacity-80">About</a>
-                    <a href="#" class="preview-nav-link text-sm font-medium hover:opacity-80">Services</a>
-                    <a href="#" class="preview-nav-link text-sm font-medium hover:opacity-80">Contact</a>
+    <!-- Theme Visualizer Dashboard -->
+    <main class="min-h-screen p-8" id="theme-dashboard">
+        <div class="max-w-6xl mx-auto">
+            
+            <h2 id="current-theme-title" class="text-4xl font-extrabold mb-8 text-center text-white">Current Theme Dashboard</h2>
+            
+            <!-- 1. Color Swatches Row (Containers remain visible as colored blocks) -->
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-12">
+                <!-- Swatch for controlling the whole color scheme -->
+                <div id="swatch-color-scheme" class="h-32 rounded-lg flex flex-col items-center justify-center border-4 border-white/5 bg-gray-800">
+                    <span class="font-bold text-lg text-white mb-2">Color Scheme</span>
+                    <i id="lock-color-scheme" class="fa-solid fa-lock-open lock-icon text-unlocked"></i>
+                </div>
+
+                <!-- Swatch for CTA/Primary color visualization -->
+                <div id="swatch-primary" class="h-32 rounded-lg flex items-center justify-center border-4 border-white/5">
+                    <span class="font-bold color-swatch-label">Primary</span>
+                </div>
+                <!-- Swatch for Accent color visualization -->
+                <div id="swatch-accent" class="h-32 rounded-lg flex items-center justify-center border-4 border-white/5">
+                    <span class="font-bold color-swatch-label">Accent</span>
+                </div>
+                <!-- Swatch for Background color visualization -->
+                <div id="swatch-background" class="h-32 rounded-lg flex items-center justify-center border-4 border-white/5">
+                    <span class="font-bold color-swatch-label">Background</span>
+                </div>
+                <!-- Swatch for Text Primary color visualization -->
+                <div id="swatch-text-primary-visual" class="h-32 rounded-lg flex items-center justify-center border-4 border-white/5 bg-gray-900">
+                    <span class="font-bold color-swatch-label" style="color: var(--text-primary);">Text</span>
                 </div>
             </div>
-        </nav>
 
-        <!-- Hero Section -->
-        <section class="text-center py-20 px-6">
-            <h1 id="preview-h1" class="text-5xl md:text-6xl font-extrabold mb-4">Craft Your Perfect Look</h1>
-            <p id="preview-p-hero" class="max-w-2xl mx-auto mb-8 text-lg">This is a live preview of your generated theme. Click "Generate Look" to instantly see a new color scheme and font pairing applied to a realistic website layout.</p>
-            <button id="preview-cta-btn" class="text-lg font-bold px-8 py-4 rounded-lg transition-transform duration-200 hover:scale-105">
-                Call to Action
-            </button>
-        </section>
-
-        <!-- Features Section -->
-        <section class="py-20 px-6">
-            <div class="container mx-auto">
-                <h2 id="preview-h2" class="text-4xl font-bold text-center mb-12">Why This Works</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <!-- Feature Card 1 -->
-                    <div class="preview-card p-8 rounded-xl">
-                        <h3 class="preview-h3 text-2xl font-semibold mb-3">Harmonious Colors</h3>
-                        <p class="preview-p-card">The color system is generated using algorithms that ensure contrast and visual appeal, providing a solid foundation.</p>
+            <!-- 2. Font Samples and Call to Action (Now entirely transparent containers) -->
+            <div class="theme-container-bg p-8 rounded-xl">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                    <!-- Heading Font -->
+                    <div class="font-sample-container">
+                        <p class="text-gray-400 mb-2 text-sm font-body">
+                            Heading Font: 
+                            <span id="heading-font-name" class="font-medium text-white">Inter</span>
+                            <i id="lock-heading-font" class="fa-solid fa-lock-open lock-icon text-unlocked ml-2"></i>
+                        </p>
+                        <h3 id="font-sample-heading" class="text-4xl font-heading text-white leading-tight">Theme Title Heading</h3>
                     </div>
-                    <!-- Feature Card 2 -->
-                    <div class="preview-card p-8 rounded-xl">
-                        <h3 class="preview-h3 text-2xl font-semibold mb-3">Elegant Typography</h3>
-                        <p class="preview-p-card">We pair a distinct heading font with a readable body font from Google's most popular selections for a professional feel.</p>
+                    <!-- Body Font 1 -->
+                    <div class="font-sample-container">
+                        <p class="text-gray-400 mb-2 text-sm font-body">
+                            Body Font: 
+                            <span id="body-font-name" class="font-medium text-white">Inter</span>
+                            <i id="lock-body-font" class="fa-solid fa-lock-open lock-icon text-unlocked ml-2"></i>
+                        </p>
+                        <p id="font-sample-body-1" class="text-lg font-body text-gray-200 leading-relaxed">The quick brown fox jumps over the lazy dog. Use this for paragraphs and menus.</p>
                     </div>
-                    <!-- Feature Card 3 -->
-                    <div class="preview-card p-8 rounded-xl">
-                        <h3 class="preview-h3 text-2xl font-semibold mb-3">Ready to Use</h3>
-                        <p class="preview-p-card">Scroll down to find the generated CSS variables. Just copy and paste them directly into your project's stylesheet.</p>
+                    <!-- Body Font 2 (Secondary/Mono) -->
+                    <div class="font-sample-container">
+                        <p class="text-gray-400 mb-2 text-sm font-body">
+                            Secondary Font: 
+                            <span id="secondary-font-name" class="font-medium text-white">Inter</span>
+                            <i id="lock-secondary-font" class="fa-solid fa-lock-open lock-icon text-unlocked ml-2"></i>
+                        </p>
+                        <p id="font-sample-body-2" class="text-sm font-body-2 text-gray-400 leading-relaxed">This smaller text can be used for captions or code snippets. 1234567890.</p>
                     </div>
                 </div>
+                
+                <div class="text-center mt-6">
+                    <button id="preview-cta-btn" class="text-xl font-bold px-10 py-4 rounded-lg transition-all duration-200 hover:scale-105">
+                        Call to Action
+                    </button>
+                </div>
             </div>
-        </section>
 
-        <!-- Code Snippets Section -->
-        <section class="bg-gray-900 py-16">
-            <div class="container mx-auto px-6">
-                <div class="max-w-3xl mx-auto">
-                    <h2 class="text-3xl font-bold text-white text-center mb-8">Grab Your Code</h2>
-                    <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-lg font-semibold text-indigo-300">CSS Variables</h3>
-                        <button id="copy-css-btn" class="text-sm bg-gray-700 hover:bg-gray-600 text-white py-1 px-3 rounded-md">Copy</button>
-                    </div>
-                    <pre class="code-block text-sm p-4 rounded-lg overflow-x-auto"><code id="css-code">:root {
+            <!-- 3. Code Snippets Section -->
+            <div class="max-w-3xl mx-auto mt-12">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-lg font-semibold text-indigo-300">CSS Variables</h3>
+                    <button id="copy-css-btn" class="text-sm bg-gray-700 hover:bg-gray-600 text-white py-1 px-3 rounded-md">Copy</button>
+                </div>
+                <!-- ADDED text-white CLASS HERE -->
+                <pre class="code-block text-sm p-4 rounded-lg overflow-x-auto"><code id="css-code" class="text-white">:root {
     /* Colors */
     --background: #0a0a0a;
     --card-background: #141414;
@@ -140,17 +191,10 @@
     /* Fonts */
     --font-heading: 'Inter', sans-serif;
     --font-body: 'Inter', sans-serif;
+    --font-secondary: 'Inter', sans-serif;
 }</code></pre>
-                </div>
             </div>
-        </section>
-
-        <!-- Footer -->
-        <footer id="preview-footer" class="py-8">
-            <div class="container mx-auto px-6 text-center">
-                <p class="text-sm">&copy; 2025 ThemeCo. All rights reserved.</p>
-            </div>
-        </footer>
+        </div>
     </main>
     
     <script type="module">
@@ -183,7 +227,8 @@
             primary: '#4fd1c5', // Teal/Cyan
             accent: '#f6ad55', // Orange/Amber
             headingFont: 'Inter',
-            bodyFont: 'Inter'
+            bodyFont: 'Inter',
+            secondaryFont: 'Inter' // New default font
         };
 
         // --- CUSTOM MESSAGE BOX ---
@@ -219,11 +264,65 @@
             const copyCssBtn = document.getElementById('copy-css-btn');
             const headingFontLoader = document.getElementById('heading-font-loader');
             const bodyFontLoader = document.getElementById('body-font-loader');
-            const websitePreview = document.getElementById('website-preview');
+            const themeDashboard = document.getElementById('theme-dashboard');
+
+            // Lock Icons
+            const lockColorScheme = document.getElementById('lock-color-scheme');
+            const lockHeadingFont = document.getElementById('lock-heading-font');
+            const lockBodyFont = document.getElementById('lock-body-font');
+            const lockSecondaryFont = document.getElementById('lock-secondary-font');
 
             // App State
             let fontsList = [];
             let userId = null; 
+            let currentTheme = defaultTheme;
+
+            // Lock State (New)
+            let isColorLocked = false;
+            let isHeadingFontLocked = false;
+            let isBodyFontLocked = false;
+            let isSecondaryFontLocked = false;
+
+
+            // --- LOCK HANDLERS (New) ---
+
+            const toggleLock = (element, isLockedRef, lockType) => {
+                let newState = !isLockedRef;
+                
+                if (lockType === 'color') {
+                    isColorLocked = newState;
+                } else if (lockType === 'heading') {
+                    isHeadingFontLocked = newState;
+                } else if (lockType === 'body') {
+                    isBodyFontLocked = newState;
+                } else if (lockType === 'secondary') {
+                    isSecondaryFontLocked = newState;
+                }
+
+                if (newState) {
+                    element.classList.remove('fa-lock-open', 'text-unlocked');
+                    element.classList.add('fa-lock', 'text-locked');
+                    showMessage(`${lockType} locked.`, 'info');
+                } else {
+                    element.classList.remove('fa-lock', 'text-locked');
+                    element.classList.add('fa-lock-open', 'text-unlocked');
+                    showMessage(`${lockType} unlocked.`, 'info');
+                }
+                return newState;
+            };
+
+            lockColorScheme.addEventListener('click', () => {
+                isColorLocked = toggleLock(lockColorScheme, isColorLocked, 'color');
+            });
+            lockHeadingFont.addEventListener('click', () => {
+                isHeadingFontLocked = toggleLock(lockHeadingFont, isHeadingFontLocked, 'heading');
+            });
+            lockBodyFont.addEventListener('click', () => {
+                isBodyFontLocked = toggleLock(lockBodyFont, isBodyFontLocked, 'body');
+            });
+            lockSecondaryFont.addEventListener('click', () => {
+                isSecondaryFontLocked = toggleLock(lockSecondaryFont, isSecondaryFontLocked, 'secondary');
+            });
 
             // --- FONT API CALLS NOW HIT THE PROXY ---
             const fetchFonts = async () => {
@@ -285,43 +384,54 @@
 
             const loadLastTheme = async () => {
                  if (!userId) {
-                     applyTheme(defaultTheme);
+                     applyTheme(currentTheme);
                      return;
                  } 
 
                  try {
                      const docSnap = await getDoc(LAST_THEME_PATH(userId));
                      if (docSnap.exists()) {
-                         applyTheme(docSnap.data());
+                         currentTheme = docSnap.data();
+                         applyTheme(currentTheme);
                          showMessage('Last saved theme loaded.', 'info');
                      } else {
-                         applyTheme(defaultTheme);
+                         applyTheme(currentTheme);
                      }
                  } catch (e) {
                      console.error('Error loading last theme:', e);
-                     applyTheme(defaultTheme);
+                     applyTheme(currentTheme);
                  }
             };
 
 
             // --- CORE THEME LOGIC ---
             const generateTheme = () => {
-                if (fontsList.length < 2) {
-                    // Force a fetch if not attempted, otherwise apply default
+                if (fontsList.length < 3) {
                     if (fontsList.length === 0) {
                         fetchFonts();
                         return showMessage('Attempting to fetch fonts now. Please wait and try again.', 'info');
                     }
-                    applyTheme(defaultTheme); 
-                    return showMessage('Font list not available, using default fonts.', 'error');
+                    if (!isColorLocked && !isHeadingFontLocked && !isBodyFontLocked && !isSecondaryFontLocked) {
+                        applyTheme(defaultTheme); // Only reset if nothing is locked
+                    }
+                    return showMessage('Font list too small, using existing or default fonts.', 'error');
                 }
                 
-                const colors = generateColors();
-                const fonts = generateFonts();
+                // Only generate new colors if NOT locked
+                const newColors = isColorLocked ? currentTheme : generateColors();
                 
-                const theme = { ...colors, ...fonts };
-                applyTheme(theme);
-                saveCurrentTheme(theme);
+                // Generate fonts, respecting locks
+                const newFonts = generate3Fonts(); 
+                
+                // Merge old state with new generated state
+                currentTheme = { 
+                    ...currentTheme, // Preserve current values
+                    ...newColors,    // Overwrite with new colors if not locked
+                    ...newFonts      // Overwrite fonts (logic inside generate3Fonts handles locks)
+                };
+
+                applyTheme(currentTheme);
+                saveCurrentTheme(currentTheme);
             };
 
             // This function ensures generated colors always contrast sharply against a dark background
@@ -333,26 +443,34 @@
                 return {
                     primary: hslToHex(h, s, l),
                     accent: hslToHex((h + 150) % 360, s, l), 
-                    background: hslToHex(0, 0, 4), // Near black
-                    cardBackground: hslToHex(0, 0, 8), // Slightly lighter near black
+                    background: hslToHex((h + 180) % 360, 5, 4), // Near black based on hue
+                    cardBackground: hslToHex((h + 180) % 360, 5, 8), // Slightly lighter near black
                     textPrimary: hslToHex(0, 0, 98), // Near white
                     textSecondary: hslToHex(0, 0, 75), // Light gray
                 };
             };
 
-            const generateFonts = () => {
-                if (fontsList.length < 2) return { headingFont: 'Inter', bodyFont: 'Inter' };
-                const headingIndex = Math.floor(Math.random() * fontsList.length);
-                let bodyIndex;
-                do {
-                    bodyIndex = Math.floor(Math.random() * fontsList.length);
-                } while (bodyIndex === headingIndex);
+            const generate3Fonts = () => {
+                if (fontsList.length < 3) return { headingFont: currentTheme.headingFont, bodyFont: currentTheme.bodyFont, secondaryFont: currentTheme.secondaryFont };
+                
+                // Shuffle and pick the first three unique fonts
+                const shuffled = [...fontsList].sort(() => 0.5 - Math.random());
+                let fontIndex = 0;
+                
+                const newFonts = {};
 
-                return {
-                    headingFont: fontsList[headingIndex].family,
-                    bodyFont: fontsList[bodyIndex].family
-                };
+                // Heading Font
+                newFonts.headingFont = isHeadingFontLocked ? currentTheme.headingFont : shuffled[fontIndex++].family;
+
+                // Body Font
+                newFonts.bodyFont = isBodyFontLocked ? currentTheme.bodyFont : shuffled[fontIndex++].family;
+
+                // Secondary Font
+                newFonts.secondaryFont = isSecondaryFontLocked ? currentTheme.secondaryFont : shuffled[fontIndex++].family;
+                
+                return newFonts;
             };
+
 
             // --- APPLYING THEME & UPDATING UI ---
             const applyTheme = (theme) => {
@@ -366,51 +484,61 @@
                 root.style.setProperty('--primary', theme.primary);
                 root.style.setProperty('--accent', theme.accent);
 
-                // Apply styles to preview elements
+                // Apply body background
                 document.body.style.backgroundColor = theme.background; 
-                websitePreview.style.backgroundColor = theme.background;
-                document.getElementById('preview-logo').style.color = theme.textPrimary;
-                document.getElementById('preview-h1').style.color = theme.textPrimary;
-                document.getElementById('preview-h2').style.color = theme.textPrimary;
-                document.getElementById('preview-p-hero').style.color = theme.textSecondary;
-                document.querySelectorAll('.preview-nav-link').forEach(el => el.style.color = theme.textSecondary);
-                document.querySelectorAll('.preview-h3').forEach(el => el.style.color = theme.textPrimary);
-                document.querySelectorAll('.preview-p-card').forEach(el => el.style.color = theme.textSecondary);
-                document.querySelectorAll('.preview-card').forEach(el => el.style.backgroundColor = theme.cardBackground);
+                themeDashboard.style.backgroundColor = theme.background;
+
+                // Apply colors to swatches
+                // The 'swatch-color-scheme' uses the primary color for its lock icon
+                lockColorScheme.style.color = isColorLocked ? theme.primary : '#ccc';
                 
+                document.getElementById('swatch-background').style.backgroundColor = theme.background;
+                // document.getElementById('swatch-card-background').style.backgroundColor = theme.cardBackground; // Removed, card background is internal setting
+                document.getElementById('swatch-primary').style.backgroundColor = theme.primary;
+                document.getElementById('swatch-accent').style.backgroundColor = theme.accent;
+                document.getElementById('swatch-text-primary-visual').style.backgroundColor = theme.background; // Visualizing text on the main background
+                document.getElementById('swatch-text-primary-visual').querySelector('span').style.color = theme.textPrimary;
+                
+                // Update CTA button
                 const ctaBtn = document.getElementById('preview-cta-btn');
                 ctaBtn.style.backgroundColor = theme.primary;
-                ctaBtn.style.color = theme.cardBackground; // Ensure button text is dark/readable on bright primary color
+                ctaBtn.style.color = theme.background; // Ensure high contrast text on button
                 ctaBtn.onmouseover = () => ctaBtn.style.backgroundColor = theme.accent;
                 ctaBtn.onmouseout = () => ctaBtn.style.backgroundColor = theme.primary;
-
-                document.getElementById('preview-footer').style.color = theme.textSecondary;
-
-                // Load and apply fonts
-                loadAndApplyFont('heading', theme.headingFont);
-                loadAndApplyFont('body', theme.bodyFont);
                 
-                // Apply font families directly to elements for preview
-                const headingStyle = `'${theme.headingFont}', sans-serif`;
-                document.getElementById('preview-logo').style.fontFamily = headingStyle;
-                document.getElementById('preview-h1').style.fontFamily = headingStyle;
-                document.getElementById('preview-h2').style.fontFamily = headingStyle;
-                document.querySelectorAll('.preview-h3').forEach(el => el.style.fontFamily = headingStyle);
+                // Load and apply fonts
+                loadAndApplyFont(theme.headingFont, 'heading');
+                loadAndApplyFont(theme.bodyFont, 'body');
+                loadAndApplyFont(theme.secondaryFont, 'body-2'); // Load 3rd font
+                
+                // Apply font families and update names
+                document.getElementById('heading-font-name').textContent = theme.headingFont;
+                document.getElementById('body-font-name').textContent = theme.bodyFont;
+                document.getElementById('secondary-font-name').textContent = theme.secondaryFont;
+                
+                // Update lock icon colors
+                lockHeadingFont.style.color = isHeadingFontLocked ? theme.primary : '#ccc';
+                lockBodyFont.style.color = isBodyFontLocked ? theme.primary : '#ccc';
+                lockSecondaryFont.style.color = isSecondaryFontLocked ? theme.primary : '#ccc';
 
-                const bodyStyle = `'${theme.bodyFont}', sans-serif`;
-                document.getElementById('preview-p-hero').style.fontFamily = bodyStyle;
-                document.querySelectorAll('.preview-nav-link').forEach(el => el.style.fontFamily = bodyStyle);
-                document.querySelectorAll('.preview-p-card').forEach(el => el.style.fontFamily = bodyStyle);
-                document.getElementById('preview-footer').style.fontFamily = bodyStyle;
+
+                document.getElementById('font-sample-heading').style.fontFamily = `'${theme.headingFont}', sans-serif`;
+                document.getElementById('font-sample-body-1').style.fontFamily = `'${theme.bodyFont}', sans-serif`;
+                document.getElementById('font-sample-body-2').style.fontFamily = `'${theme.secondaryFont}', sans-serif`;
                 
                 updateCodeSnippets(theme);
             };
             
-            const loadAndApplyFont = (type, family) => {
+            const loadAndApplyFont = (family, type) => {
                 if (family === 'Inter') return; 
                 
                 const loader = type === 'heading' ? headingFontLoader : bodyFontLoader;
-                loader.href = `https://fonts.googleapis.com/css2?family=${family.replace(/ /g, '+')}:wght@400;700;800&display=swap`;
+                
+                if (type === 'heading') {
+                    headingFontLoader.href = `https://fonts.googleapis.com/css2?family=${family.replace(/ /g, '+')}:wght@700;900&display=swap`;
+                } else {
+                    bodyFontLoader.href = `https://fonts.googleapis.com/css2?family=${family.replace(/ /g, '+')}:wght@400;500;700&display=swap`;
+                }
             };
 
             const updateCodeSnippets = (theme) => {
@@ -426,6 +554,7 @@
     /* Fonts */
     --font-heading: '${theme.headingFont}', sans-serif;
     --font-body: '${theme.bodyFont}', sans-serif;
+    --font-secondary: '${theme.secondaryFont}', sans-serif;
 }`;
             };
 
@@ -493,4 +622,3 @@
     </script>
 </body>
 </html>
-
