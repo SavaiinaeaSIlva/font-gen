@@ -71,7 +71,14 @@
             transition: .4s;
         }
         .toggle-switch input:checked + .slider {
-            background-color: var(--primary); /* Primary color when checked/locked */
+            background-color: #22c55e; /* Green for locked state */
+        }
+        /* Visual indicator for locked items */
+        .locked {
+            border-color: rgba(34, 197, 94, 0.2) !important; /* Subtle green border for locked items */
+        }
+        .locked .slider {
+            background-color: #22c55e !important;
         }
         
         /* Slider Thumb (circle) */
@@ -269,10 +276,30 @@
                     
                     // Re-render the palette to ensure the visual toggle state is correct
                     renderColorPalette(lastTheme);
+                } else if (targetId.includes('font-toggle')) {
+                    // Font lock logic - store current font when locked
+                    const fontType = e.target.getAttribute('data-font');
+                    if (e.target.checked) {
+                        // Store current font as locked value
+                        switch(fontType) {
+                            case 'heading':
+                                lastTheme.headingFont = document.getElementById('heading-font-name').textContent;
+                                break;
+                            case 'body':
+                                lastTheme.bodyFont = document.getElementById('body-font-name').textContent;
+                                break;
+                            case 'tertiary':
+                                lastTheme.tertiaryFont = document.getElementById('tertiary-font-name').textContent;
+                                break;
+                        }
+                    }
                 }
                 
-                // NEW LOGIC: Re-generate the theme immediately after any toggle (color or font) is changed.
-                generateTheme();
+                // Add visual feedback for locked state
+                const container = e.target.closest('.font-display, .color-block-container');
+                if (container) {
+                    container.classList.toggle('locked', e.target.checked);
+                }
             };
 
 
@@ -397,6 +424,11 @@
                     bodyFont: lastTheme.bodyFont, 
                     tertiaryFont: lastTheme.tertiaryFont 
                 };
+                
+                // Check if fonts are locked and keep their current values
+                const headingLocked = document.getElementById('heading-font-toggle')?.checked || false;
+                const bodyLocked = document.getElementById('body-font-toggle')?.checked || false;
+                const tertiaryLocked = document.getElementById('tertiary-font-toggle')?.checked || false;
 
                 const getRandomFont = () => fontsList[Math.floor(Math.random() * fontsList.length)].family;
 
