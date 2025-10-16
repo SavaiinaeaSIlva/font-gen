@@ -140,7 +140,7 @@
 
         <section class="w-full max-w-5xl">
             <h2 class="text-xl font-semibold text-white mb-4 text-center">Color Palette</h2>
-            <div id="color-palette" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+            <div id="color-palette" class="grid grid-cols-3 gap-4">
                 </div>
         </section>
 
@@ -149,7 +149,7 @@
             <div class="space-y-3">
 
                 <div class="font-display flex items-center p-4 rounded-xl">
-                    <h3 id="heading-text" class="text-4xl text-white font-extrabold flex-grow">Heading Font Example</h3>
+                    <h3 id="heading-text" class="text-4xl text-white font-extrabold flex-grow">Lorem ipsum dolor sit amet</h3>
                     <div class="flex items-center space-x-3">
                         <span id="heading-font-name" class="text-lg text-gray-400">Inter</span>
                         <label class="toggle-switch relative inline-block w-12 h-6">
@@ -160,7 +160,7 @@
                 </div>
 
                 <div class="font-display flex items-center p-4 rounded-xl">
-                    <h3 id="body-text" class="text-xl text-white flex-grow">Body Font Paragraph Text is here.</h3>
+                    <h3 id="body-text" class="text-xl text-white flex-grow">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</h3>
                     <div class="flex items-center space-x-3">
                         <span id="body-font-name" class="text-lg text-gray-400">Inter</span>
                         <label class="toggle-switch relative inline-block w-12 h-6">
@@ -171,7 +171,7 @@
                 </div>
 
                 <div class="font-display flex items-center p-4 rounded-xl">
-                    <h3 id="tertiary-text" class="text-base text-white flex-grow italic">Tertiary Font for small print or captions.</h3>
+                    <h3 id="tertiary-text" class="text-base text-white flex-grow italic">Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</h3>
                     <div class="flex items-center space-x-3">
                         <span id="tertiary-font-name" class="text-lg text-gray-400">Inter</span>
                         <label class="toggle-switch relative inline-block w-12 h-6">
@@ -558,10 +558,7 @@
                 const colors = [
                     { name: 'primary', var: theme.primary, label: 'Primary' },
                     { name: 'accent', var: theme.accent, label: 'Accent' },
-                    { name: 'background', var: theme.background, label: 'Background' },
-                    { name: 'cardBackground', var: theme.cardBackground, label: 'Card' },
-                    { name: 'textPrimary', var: theme.textPrimary, label: 'Text-P' },
-                    { name: 'textSecondary', var: theme.textSecondary, label: 'Text-S' }
+                    { name: 'cardBackground', var: theme.cardBackground, label: 'Surface' }
                 ];
 
                 colors.forEach(color => {
@@ -590,12 +587,9 @@
             const updateCodeSnippets = (theme) => {
                 cssCode.textContent = `:root {
     /* Colors */
-    --background: ${theme.background};
-    --card-background: ${theme.cardBackground};
-    --text-primary: ${theme.textPrimary};
-    --text-secondary: ${theme.textSecondary};
     --primary: ${theme.primary};
     --accent: ${theme.accent};
+    --surface: ${theme.cardBackground};
     
     /* Fonts */
     --font-heading: '${theme.headingFont}', sans-serif;
