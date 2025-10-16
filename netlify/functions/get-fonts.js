@@ -14,7 +14,8 @@ exports.handler = async (event, context) => {
         };
     }
 
-    const GOOGLE_FONTS_API_URL = `https://www.googleapis.com/webfonts/v1/webfonts?key=${API_KEY}&sort=popularity`;
+    // MODIFIED: Changed sort=popularity to sort=trending for more varied fonts
+    const GOOGLE_FONTS_API_URL = `https://www.googleapis.com/webfonts/v1/webfonts?key=${API_KEY}&sort=trending`;
 
     try {
         // 2. Securely call the external Google API
@@ -51,4 +52,3 @@ exports.handler = async (event, context) => {
         };
     }
 };
-
