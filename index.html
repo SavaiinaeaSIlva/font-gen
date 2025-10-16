@@ -31,6 +31,13 @@
             cursor: pointer;
             transition: color 0.3s ease;
         }
+        /* Tighter Spacing Fixes */
+        .color-block-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 4px 0;
+        }
     </style>
 </head>
 <body class="bg-black min-h-screen flex flex-col">
@@ -55,23 +62,23 @@
     </header>
 
     <!-- Theme Dashboard -->
-    <main id="theme-dashboard" class="flex-grow container mx-auto p-6 md:p-10 flex flex-col items-center justify-center space-y-12">
+    <main id="theme-dashboard" class="flex-grow container mx-auto p-6 md:p-10 flex flex-col items-center justify-center space-y-6">
 
         <!-- Color Palette Row -->
         <section class="w-full max-w-5xl">
-            <h2 class="text-xl font-semibold text-white mb-6 text-center">Color Palette</h2>
-            <div id="color-palette" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
-                <!-- Color Block Template -->
+            <h2 class="text-xl font-semibold text-white mb-4 text-center">Color Palette</h2>
+            <div id="color-palette" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                <!-- Color Blocks will be rendered here by JavaScript -->
             </div>
         </section>
 
         <!-- Typography Display Row -->
         <section class="w-full max-w-5xl">
-            <h2 class="text-xl font-semibold text-white mb-6 text-center">Typography Pairing</h2>
-            <div class="space-y-6">
+            <h2 class="text-xl font-semibold text-white mb-4 text-center">Typography Pairing</h2>
+            <div class="space-y-4">
 
                 <!-- Heading Font -->
-                <div class="font-display flex items-center p-4 rounded-xl">
+                <div class="font-display flex items-center p-4 rounded-xl border border-gray-800">
                     <h3 id="heading-text" class="text-4xl text-white font-bold flex-grow">Heading Font Example</h3>
                     <div class="flex items-center space-x-3">
                         <span id="heading-font-name" class="text-lg text-gray-400">Inter</span>
@@ -80,7 +87,7 @@
                 </div>
 
                 <!-- Body Font -->
-                <div class="font-display flex items-center p-4 rounded-xl">
+                <div class="font-display flex items-center p-4 rounded-xl border border-gray-800">
                     <h3 id="body-text" class="text-xl text-white flex-grow">Body Font Paragraph Text is here.</h3>
                     <div class="flex items-center space-x-3">
                         <span id="body-font-name" class="text-lg text-gray-400">Inter</span>
@@ -89,7 +96,7 @@
                 </div>
 
                 <!-- Tertiary Font -->
-                <div class="font-display flex items-center p-4 rounded-xl">
+                <div class="font-display flex items-center p-4 rounded-xl border border-gray-800">
                     <h3 id="tertiary-text" class="text-base text-white flex-grow italic">Tertiary Font for small print or captions.</h3>
                     <div class="flex items-center space-x-3">
                         <span id="tertiary-font-name" class="text-lg text-gray-400">Inter</span>
@@ -101,14 +108,14 @@
         </section>
 
         <!-- Call to Action Button -->
-        <section class="w-full max-w-5xl flex justify-center">
+        <section class="w-full max-w-5xl flex justify-center pt-2">
             <button id="cta-button" class="text-white text-xl font-bold px-10 py-5 rounded-full shadow-2xl transition-transform duration-300 hover:scale-105">
                 Call to Action Button
             </button>
         </section>
 
         <!-- Code Snippets Section -->
-        <section class="w-full max-w-4xl pt-8">
+        <section class="w-full max-w-4xl pt-4">
             <div class="max-w-3xl mx-auto">
                 <div class="flex items-center justify-between mb-2">
                     <h3 class="text-lg font-semibold text-indigo-300">CSS Variables</h3>
@@ -117,11 +124,11 @@
                 <pre class="code-block text-sm p-4 rounded-lg overflow-x-auto"><code id="css-code" class="text-white">:root {
     /* Colors */
     --background: #000000;
+    --card-background: #1a1a1a;
     --text-primary: #ffffff;
     --text-secondary: #aaaaaa;
     --primary: #00bcd4;
     --accent: #ff9800;
-    --card-background: #1a1a1a;
     
     /* Fonts */
     --font-heading: 'Inter', sans-serif;
@@ -151,10 +158,22 @@
 
             // --- State and Constants ---
             let fontsList = [];
-            let isColorsLocked = false;
+            
+            // Individual Lock States for Colors
+            let lockStates = {
+                background: false,
+                cardBackground: false,
+                textPrimary: false,
+                textSecondary: false,
+                primary: false,
+                accent: false
+            };
+
+            // Individual Lock States for Fonts
             let isHeadingFontLocked = false;
             let isBodyFontLocked = false;
             let isTertiaryFontLocked = false;
+
             let lastTheme = {
                 background: '#000000',
                 cardBackground: '#1a1a1a',
@@ -186,18 +205,7 @@
                 }, 3000);
             };
 
-            const toggleLock = (type) => {
-                const lockIcon = document.getElementById(`${type}-font-lock`);
-                
-                if (type === 'colors') {
-                    isColorsLocked = !isColorsLocked;
-                    lockIcon.classList.toggle('fa-lock', isColorsLocked);
-                    lockIcon.classList.toggle('fa-lock-open', !isColorsLocked);
-                    lockIcon.style.color = isColorsLocked ? lastTheme.primary : '';
-                    showMessage(`Colors ${isColorsLocked ? 'LOCKED' : 'UNLOCKED'}`);
-                    return;
-                }
-
+            const toggleFontLock = (type) => {
                 let lockedState, lockIconId;
                 switch(type) {
                     case 'heading':
@@ -220,9 +228,22 @@
                 const icon = document.getElementById(lockIconId);
                 icon.classList.toggle('fa-lock', lockedState);
                 icon.classList.toggle('fa-lock-open', !lockedState);
-                icon.style.color = lockedState ? lastTheme.primary : '';
+                icon.style.color = lockedState ? lastTheme.primary : 'var(--text-secondary)';
                 showMessage(`${type.charAt(0).toUpperCase() + type.slice(1)} Font ${lockedState ? 'LOCKED' : 'UNLOCKED'}`);
             };
+            
+            const toggleColorLock = (colorName) => {
+                lockStates[colorName] = !lockStates[colorName];
+                const icon = document.getElementById(`${colorName}-lock`);
+                
+                icon.classList.toggle('fa-lock', lockStates[colorName]);
+                icon.classList.toggle('fa-lock-open', !lockStates[colorName]);
+                icon.style.color = lockStates[colorName] ? lastTheme.primary : 'var(--text-secondary)';
+                
+                const displayName = colorName.replace(/([A-Z])/g, ' $1').trim();
+                showMessage(`${displayName} ${lockStates[colorName] ? 'LOCKED' : 'UNLOCKED'}`);
+            };
+
 
             // --- API & FONT FETCHING ---
             
@@ -257,7 +278,7 @@
                 generateThemeBtn.disabled = true;
                 generateThemeBtn.textContent = 'Generating...';
 
-                const newColors = isColorsLocked ? lastTheme : generateColors();
+                const newColors = generateColors();
                 const newFonts = generate3Fonts();
 
                 lastTheme = { ...newColors, ...newFonts };
@@ -273,16 +294,17 @@
             const generateColors = () => {
                 const h = Math.floor(Math.random() * 360); // Random Hue
                 const s = 70 + Math.random() * 10; // Saturation 70-80%
+
+                // Function to generate a random primary/accent color
+                const getRandomColor = (hue, sat) => hslToHex(hue, sat, 65 + Math.random() * 10);
                 
-                // Pure black background with high-contrast text is locked in
-                const background = '#000000';
-                const cardBackground = '#1a1a1a'; // Dark gray for card blocks
-                const textPrimary = '#ffffff';
-                const textSecondary = '#aaaaaa'; 
-                
-                // Primary and Accent colors derived from random hue
-                const primary = hslToHex(h, s, 65 + Math.random() * 10);
-                const accent = hslToHex((h + 150) % 360, s, 65 + Math.random() * 10);
+                // Keep the existing color if locked, otherwise generate a new one
+                const background = lockStates.background ? lastTheme.background : getRandomColor((h + 180) % 360, 10);
+                const cardBackground = lockStates.cardBackground ? lastTheme.cardBackground : getRandomColor((h + 180) % 360, 15);
+                const textPrimary = lockStates.textPrimary ? lastTheme.textPrimary : getRandomColor(h, 15, 95);
+                const textSecondary = lockStates.textSecondary ? lastTheme.textSecondary : getRandomColor(h, 10, 70);
+                const primary = lockStates.primary ? lastTheme.primary : getRandomColor(h, s, 65 + Math.random() * 10);
+                const accent = lockStates.accent ? lastTheme.accent : getRandomColor((h + 150) % 360, s, 65 + Math.random() * 10);
                 
                 return {
                     background,
@@ -384,38 +406,29 @@
                 paletteContainer.innerHTML = '';
                 
                 const colors = [
-                    { name: 'Primary', var: theme.primary, label: 'Primary' },
-                    { name: 'Accent', var: theme.accent, label: 'Accent' },
-                    { name: 'Background', var: theme.background, label: 'Background' },
-                    { name: 'Card Background', var: theme.cardBackground, label: 'Card' },
-                    { name: 'Primary Text', var: theme.textPrimary, label: 'Text-P' },
-                    { name: 'Secondary Text', var: theme.textSecondary, label: 'Text-S' }
+                    { name: 'primary', var: theme.primary, label: 'Primary' },
+                    { name: 'accent', var: theme.accent, label: 'Accent' },
+                    { name: 'background', var: theme.background, label: 'Background' },
+                    { name: 'cardBackground', var: theme.cardBackground, label: 'Card' },
+                    { name: 'textPrimary', var: theme.textPrimary, label: 'Text-P' },
+                    { name: 'textSecondary', var: theme.textSecondary, label: 'Text-S' }
                 ];
 
                 colors.forEach(color => {
+                    const lockIconState = lockStates[color.name] ? 'fa-lock' : 'fa-lock-open';
+                    const lockIconColor = lockStates[color.name] ? theme.primary : 'var(--text-secondary)';
+
                     const div = document.createElement('div');
-                    div.className = 'flex flex-col items-center space-y-2';
+                    div.className = 'color-block-container';
                     div.innerHTML = `
-                        <div class="w-16 h-16 rounded-lg ring-2 ring-gray-700 hover:ring-white transition-all cursor-pointer" style="background-color: ${color.var};"></div>
+                        <div class="w-16 h-16 rounded-lg ring-2 ring-gray-700 hover:ring-white transition-all cursor-pointer mb-1" style="background-color: ${color.var};"></div>
                         <span class="text-xs font-medium text-gray-300">${color.label}</span>
-                        <span class="text-sm font-mono text-white">${color.var}</span>
+                        <span class="text-xs font-mono text-white">${color.var}</span>
+                        <i id="${color.name}-lock" class="lock-icon fas ${lockIconState} text-sm mt-1" style="color: ${lockIconColor};"></i>
                     `;
                     paletteContainer.appendChild(div);
+                    document.getElementById(`${color.name}-lock`).addEventListener('click', () => toggleColorLock(color.name));
                 });
-                
-                // Add lock icon for the entire palette
-                const lockContainer = document.createElement('div');
-                lockContainer.className = 'flex flex-col items-center space-y-2 col-span-2 sm:col-span-3 lg:col-span-1 justify-center';
-                lockContainer.innerHTML = `
-                    <i id="colors-lock" class="lock-icon fas ${isColorsLocked ? 'fa-lock' : 'fa-lock-open'} text-3xl text-gray-500 hover:text-white" data-font="colors"></i>
-                    <span class="text-sm font-medium text-gray-400">Lock Colors</span>
-                `;
-                paletteContainer.appendChild(lockContainer);
-                document.getElementById('colors-lock').addEventListener('click', () => toggleLock('colors'));
-                
-                if (isColorsLocked) {
-                     document.getElementById('colors-lock').style.color = lastTheme.primary;
-                }
             };
 
             const updateCodeSnippets = (theme) => {
@@ -466,9 +479,9 @@
             // --- Event Listeners and Initialization ---
 
             const attachLockListeners = () => {
-                document.getElementById('heading-font-lock').addEventListener('click', () => toggleLock('heading'));
-                document.getElementById('body-font-lock').addEventListener('click', () => toggleLock('body'));
-                document.getElementById('tertiary-font-lock').addEventListener('click', () => toggleLock('tertiary'));
+                document.getElementById('heading-font-lock').addEventListener('click', () => toggleFontLock('heading'));
+                document.getElementById('body-font-lock').addEventListener('click', () => toggleFontLock('body'));
+                document.getElementById('tertiary-font-lock').addEventListener('click', () => toggleFontLock('tertiary'));
             };
 
             const init = () => {
@@ -488,4 +501,3 @@
     </script>
 </body>
 </html>
-
