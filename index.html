@@ -12,20 +12,36 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #000000; /* Site Background is fixed to Pure Black */
+            background-color: #000000; /* Site Background is fixed to Pure Black (locked) */
+            color: #e5e7eb;
             --transition-speed: 0.5s;
         }
         /* Smooth transitions for themeable elements */
         #theme-dashboard, .color-block, .font-display, #cta-button {
             transition: all var(--transition-speed) ease;
         }
+        /* Panels use card background variable for consistency */
+        #theme-dashboard {
+            background-color: var(--background); /* will be overridden to fixed black in JS */
+        }
         /* Style for the dynamic font loader links */
         #heading-font-loader, #body-font-loader, #tertiary-font-loader {
             display: none;
         }
         .code-block {
-            background-color: #1a1a1a; /* Dark gray for contrast with black background */
-            border: 1px solid #444;
+            background-color: rgba(26,26,26,0.95); /* Slightly lighter panel against pure black */
+            border: 1px solid rgba(255,255,255,0.04);
+        }
+
+        /* Panels that should sit on the black background */
+        .font-display, .code-block, .color-block-container {
+            background-color: var(--card-background);
+            border: 1px solid rgba(255,255,255,0.03);
+            box-shadow: none;
+        }
+
+        footer {
+            background: transparent;
         }
         /* Tighter Spacing Fixes */
         .color-block-container {
@@ -34,6 +50,12 @@
             align-items: center;
             padding: 4px 0;
             cursor: default;
+        }
+
+        /* Minimalist controls */
+        .toggle-switch .slider {
+            box-shadow: none;
+            opacity: 0.95;
         }
         
         /* Custom Toggle Switch Styles */
@@ -73,10 +95,10 @@
     <link id="body-font-loader" rel="stylesheet" href="">
     <link id="tertiary-font-loader" rel="stylesheet" href="">
 
-    <header class="bg-black p-4 sticky top-0 z-10 border-b border-gray-800">
+    <header class="bg-transparent p-4 sticky top-0 z-10">
         <div class="container mx-auto flex flex-wrap items-center justify-between gap-4">
             <h1 class="text-3xl font-extrabold text-white">This shit should be free</h1>
-            <button id="generate-theme-btn" class="bg-indigo-700 hover:bg-indigo-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-indigo-800 shadow-md">
+            <button id="generate-theme-btn" class="bg-indigo-700 hover:bg-indigo-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-800">
                 Generate Look
             </button>
             <p class="text-sm text-gray-500 hidden sm:block">Fonts powered by Netlify Functions proxy.</p>
@@ -95,7 +117,7 @@
             <h2 class="text-xl font-semibold text-white mb-4 text-center">Typography Pairing</h2>
             <div class="space-y-3">
 
-                <div class="font-display flex items-center p-4 rounded-xl border border-gray-800">
+                <div class="font-display flex items-center p-4 rounded-xl">
                     <h3 id="heading-text" class="text-4xl text-white font-extrabold flex-grow">Heading Font Example</h3>
                     <div class="flex items-center space-x-3">
                         <span id="heading-font-name" class="text-lg text-gray-400">Inter</span>
@@ -106,7 +128,7 @@
                     </div>
                 </div>
 
-                <div class="font-display flex items-center p-4 rounded-xl border border-gray-800">
+                <div class="font-display flex items-center p-4 rounded-xl">
                     <h3 id="body-text" class="text-xl text-white flex-grow">Body Font Paragraph Text is here.</h3>
                     <div class="flex items-center space-x-3">
                         <span id="body-font-name" class="text-lg text-gray-400">Inter</span>
@@ -117,7 +139,7 @@
                     </div>
                 </div>
 
-                <div class="font-display flex items-center p-4 rounded-xl border border-gray-800">
+                <div class="font-display flex items-center p-4 rounded-xl">
                     <h3 id="tertiary-text" class="text-base text-white flex-grow italic">Tertiary Font for small print or captions.</h3>
                     <div class="flex items-center space-x-3">
                         <span id="tertiary-font-name" class="text-lg text-gray-400">Inter</span>
@@ -132,7 +154,7 @@
         </section>
 
         <section class="w-full max-w-5xl flex justify-center pt-2">
-            <button id="cta-button" class="text-white text-xl font-bold px-10 py-5 rounded-full shadow-2xl transition-transform duration-300 hover:scale-105">
+            <button id="cta-button" class="text-white text-xl font-bold px-10 py-5 rounded-full transition-transform duration-300 hover:scale-105">
                 Call to Action Button
             </button>
         </section>
@@ -177,6 +199,12 @@
             const tertiaryFontLoader = document.getElementById('tertiary-font-loader');
             const ctaButton = document.getElementById('cta-button');
             const themeDashboard = document.getElementById('theme-dashboard');
+
+            // Defensive guards for optional DOM elements
+            if (!generateThemeBtn) throw new Error('Missing #generate-theme-btn');
+            if (!cssCode) throw new Error('Missing #css-code');
+            if (!copyCssBtn) throw new Error('Missing #copy-css-btn');
+            if (!themeDashboard) throw new Error('Missing #theme-dashboard');
 
             // --- State and Constants ---
             let fontsList = [];
@@ -334,9 +362,9 @@
                 const bodyToggle = document.getElementById('body-font-toggle');
                 const tertiaryToggle = document.getElementById('tertiary-font-toggle');
 
-                const headingFont = headingToggle.checked ? lastTheme.headingFont : getRandomFont();
-                const bodyFont = bodyToggle.checked ? lastTheme.bodyFont : getRandomFont();
-                const tertiaryFont = tertiaryToggle.checked ? lastTheme.tertiaryFont : getRandomFont();
+                const headingFont = headingToggle && headingToggle.checked ? lastTheme.headingFont : getRandomFont();
+                const bodyFont = bodyToggle && bodyToggle.checked ? lastTheme.bodyFont : getRandomFont();
+                const tertiaryFont = tertiaryToggle && tertiaryToggle.checked ? lastTheme.tertiaryFont : getRandomFont();
                 
                 return { headingFont, bodyFont, tertiaryFont };
             };
@@ -371,30 +399,36 @@
                     const el = document.getElementById(id);
                     if (el) el.style.fontFamily = fontStyle;
                 });
-                document.getElementById(`${type}-font-name`).textContent = family;
+                const nameEl = document.getElementById(`${type}-font-name`);
+                if (nameEl) nameEl.textContent = family;
                 document.documentElement.style.setProperty(cssVarName, fontStyle);
             };
 
             const applyTheme = (theme) => {
                 const root = document.documentElement;
                 
-                root.style.setProperty('--background', theme.background);
+                // Keep the global page background locked to pure black. Only expose the generated
+                // background as a swatch and use the generated cardBackground for panels.
+                root.style.setProperty('--background', '#000000');
                 root.style.setProperty('--card-background', theme.cardBackground);
                 root.style.setProperty('--text-primary', theme.textPrimary);
                 root.style.setProperty('--text-secondary', theme.textSecondary);
                 root.style.setProperty('--primary', theme.primary);
                 root.style.setProperty('--accent', theme.accent);
 
-                themeDashboard.style.backgroundColor = theme.background;
-
+                // Use card background for the main panel surfaces, keep page black
+                themeDashboard.style.backgroundColor = theme.cardBackground;
                 renderColorPalette(theme);
 
                 ctaButton.style.backgroundColor = theme.primary;
                 ctaButton.style.color = theme.textPrimary; 
 
-                document.getElementById('heading-text').style.color = theme.textPrimary;
-                document.getElementById('body-text').style.color = theme.textPrimary;
-                document.getElementById('tertiary-text').style.color = theme.textPrimary;
+                const headingTextEl = document.getElementById('heading-text');
+                const bodyTextEl = document.getElementById('body-text');
+                const tertiaryTextEl = document.getElementById('tertiary-text');
+                if (headingTextEl) headingTextEl.style.color = theme.textPrimary;
+                if (bodyTextEl) bodyTextEl.style.color = theme.textPrimary;
+                if (tertiaryTextEl) tertiaryTextEl.style.color = theme.textPrimary;
                 
                 loadAndApplyFont('heading', theme.headingFont);
                 loadAndApplyFont('body', theme.bodyFont);
@@ -476,14 +510,16 @@
             // --- Event Listeners and Initialization ---
 
             const attachListeners = () => {
-                generateThemeBtn.addEventListener('click', generateTheme);
-                copyCssBtn.addEventListener('click', copyCss);
+                if (generateThemeBtn) generateThemeBtn.addEventListener('click', generateTheme);
+                if (copyCssBtn) copyCssBtn.addEventListener('click', copyCss);
 
-                // Attach the central listener (handleLockToggle) to all font toggles.
-                // This function now correctly handles locking AND forces a theme re-generation.
-                document.getElementById('heading-font-toggle').addEventListener('change', handleLockToggle);
-                document.getElementById('body-font-toggle').addEventListener('change', handleLockToggle);
-                document.getElementById('tertiary-font-toggle').addEventListener('change', handleLockToggle);
+                // Attach the central listener (handleLockToggle) to all font toggles, if they exist.
+                const hfToggle = document.getElementById('heading-font-toggle');
+                const bfToggle = document.getElementById('body-font-toggle');
+                const tfToggle = document.getElementById('tertiary-font-toggle');
+                if (hfToggle) hfToggle.addEventListener('change', handleLockToggle);
+                if (bfToggle) bfToggle.addEventListener('change', handleLockToggle);
+                if (tfToggle) tfToggle.addEventListener('change', handleLockToggle);
             };
 
             const init = () => {
