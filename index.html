@@ -8,7 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Load Heroicons for the toggle switch -->
+    <script src="https://cdn.jsdelivr.net/npm/@heroicons/react@2.0.12/dist/24/outline/index.js"></script> 
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -27,16 +28,31 @@
             background-color: #1a1a1a; /* Dark gray for contrast with black background */
             border: 1px solid #444;
         }
-        .lock-icon {
-            cursor: pointer;
-            transition: color 0.3s ease;
-        }
         /* Tighter Spacing Fixes */
         .color-block-container {
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 4px 0;
+            cursor: default; /* Remove default lock cursor */
+        }
+        /* Custom Toggle Switch Styles */
+        .toggle-switch input:checked + .slider {
+            background-color: var(--primary);
+        }
+        .toggle-switch input:focus + .slider {
+            box-shadow: 0 0 1px var(--primary);
+        }
+        .toggle-switch input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+        .slider {
+            background-color: #525252; /* Gray-600 for unlocked state */
+            transition: .4s;
+        }
+        .slider:before {
+            background-color: white;
+            transition: .4s;
         }
     </style>
 </head>
@@ -46,9 +62,6 @@
     <link id="heading-font-loader" rel="stylesheet" href="">
     <link id="body-font-loader" rel="stylesheet" href="">
     <link id="tertiary-font-loader" rel="stylesheet" href="">
-
-    <!-- Notification Message Box -->
-    <div id="message-box" class="fixed top-4 right-4 bg-gray-700 text-white p-3 rounded-lg shadow-xl z-50 transition-opacity duration-300 opacity-0 pointer-events-none"></div>
 
     <!-- Controls Panel -->
     <header class="bg-black p-4 sticky top-0 z-10 border-b border-gray-800">
@@ -67,7 +80,7 @@
         <!-- Color Palette Row -->
         <section class="w-full max-w-5xl">
             <h2 class="text-xl font-semibold text-white mb-4 text-center">Color Palette</h2>
-            <div id="color-palette" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div id="color-palette" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
                 <!-- Color Blocks will be rendered here by JavaScript -->
             </div>
         </section>
@@ -75,14 +88,18 @@
         <!-- Typography Display Row -->
         <section class="w-full max-w-5xl">
             <h2 class="text-xl font-semibold text-white mb-4 text-center">Typography Pairing</h2>
-            <div class="space-y-4">
+            <div class="space-y-3">
 
                 <!-- Heading Font -->
                 <div class="font-display flex items-center p-4 rounded-xl border border-gray-800">
-                    <h3 id="heading-text" class="text-4xl text-white font-bold flex-grow">Heading Font Example</h3>
+                    <h3 id="heading-text" class="text-4xl text-white font-extrabold flex-grow">Heading Font Example</h3>
                     <div class="flex items-center space-x-3">
                         <span id="heading-font-name" class="text-lg text-gray-400">Inter</span>
-                        <i id="heading-font-lock" class="lock-icon fas fa-lock-open text-gray-500 hover:text-white" data-font="heading"></i>
+                        <label class="toggle-switch relative inline-block w-12 h-6">
+                            <input type="checkbox" id="heading-font-toggle" class="opacity-0 w-0 h-0" data-font="heading">
+                            <span class="slider absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full"></span>
+                            <span class="slider before:absolute before:content-[''] before:h-5 before:w-5 before:left-[2px] before:bottom-[2px] before:rounded-full"></span>
+                        </label>
                     </div>
                 </div>
 
@@ -91,7 +108,11 @@
                     <h3 id="body-text" class="text-xl text-white flex-grow">Body Font Paragraph Text is here.</h3>
                     <div class="flex items-center space-x-3">
                         <span id="body-font-name" class="text-lg text-gray-400">Inter</span>
-                        <i id="body-font-lock" class="lock-icon fas fa-lock-open text-gray-500 hover:text-white" data-font="body"></i>
+                        <label class="toggle-switch relative inline-block w-12 h-6">
+                            <input type="checkbox" id="body-font-toggle" class="opacity-0 w-0 h-0" data-font="body">
+                            <span class="slider absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full"></span>
+                            <span class="slider before:absolute before:content-[''] before:h-5 before:w-5 before:left-[2px] before:bottom-[2px] before:rounded-full"></span>
+                        </label>
                     </div>
                 </div>
 
@@ -100,7 +121,11 @@
                     <h3 id="tertiary-text" class="text-base text-white flex-grow italic">Tertiary Font for small print or captions.</h3>
                     <div class="flex items-center space-x-3">
                         <span id="tertiary-font-name" class="text-lg text-gray-400">Inter</span>
-                        <i id="tertiary-font-lock" class="lock-icon fas fa-lock-open text-gray-500 hover:text-white" data-font="tertiary"></i>
+                        <label class="toggle-switch relative inline-block w-12 h-6">
+                            <input type="checkbox" id="tertiary-font-toggle" class="opacity-0 w-0 h-0" data-font="tertiary">
+                            <span class="slider absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full"></span>
+                            <span class="slider before:absolute before:content-[''] before:h-5 before:w-5 before:left-[2px] before:bottom-[2px] before:rounded-full"></span>
+                        </label>
                     </div>
                 </div>
 
@@ -153,14 +178,13 @@
             const headingFontLoader = document.getElementById('heading-font-loader');
             const bodyFontLoader = document.getElementById('body-font-loader');
             const tertiaryFontLoader = document.getElementById('tertiary-font-loader');
-            const messageBox = document.getElementById('message-box');
             const ctaButton = document.getElementById('cta-button');
 
             // --- State and Constants ---
             let fontsList = [];
             
-            // Individual Lock States for Colors
-            let lockStates = {
+            // Individual Lock States for Colors (using toggle checkboxes)
+            const lockStates = {
                 background: false,
                 cardBackground: false,
                 textPrimary: false,
@@ -168,11 +192,6 @@
                 primary: false,
                 accent: false
             };
-
-            // Individual Lock States for Fonts
-            let isHeadingFontLocked = false;
-            let isBodyFontLocked = false;
-            let isTertiaryFontLocked = false;
 
             let lastTheme = {
                 background: '#000000',
@@ -188,60 +207,21 @@
 
             // --- UI/UX Utilities ---
 
-            const showMessage = (text, type = 'success') => {
-                messageBox.textContent = text;
-                messageBox.className = `fixed top-4 right-4 p-3 rounded-lg shadow-xl z-50 transition-opacity duration-300 opacity-100 pointer-events-auto`;
-                
-                if (type === 'error') {
-                    messageBox.style.backgroundColor = '#dc2626'; // Tailwind red-600
-                } else {
-                    messageBox.style.backgroundColor = '#10b981'; // Tailwind emerald-500
-                }
+            // No showMessage needed, as requested.
 
-                setTimeout(() => {
-                    messageBox.classList.remove('opacity-100');
-                    messageBox.classList.add('opacity-0');
-                    messageBox.classList.add('pointer-events-none');
-                }, 3000);
-            };
-
-            const toggleFontLock = (type) => {
-                let lockedState, lockIconId;
-                switch(type) {
-                    case 'heading':
-                        isHeadingFontLocked = !isHeadingFontLocked;
-                        lockedState = isHeadingFontLocked;
-                        lockIconId = 'heading-font-lock';
-                        break;
-                    case 'body':
-                        isBodyFontLocked = !isBodyFontLocked;
-                        lockedState = isBodyFontLocked;
-                        lockIconId = 'body-font-lock';
-                        break;
-                    case 'tertiary':
-                        isTertiaryFontLocked = !isTertiaryFontLocked;
-                        lockedState = isTertiaryFontLocked;
-                        lockIconId = 'tertiary-font-lock';
-                        break;
+            const handleLockToggle = (e) => {
+                const targetId = e.target.id;
+                
+                if (targetId.includes('font')) {
+                    // Font lock
+                    const type = e.target.getAttribute('data-font');
+                    // Lock state is determined by the checkbox's checked status
+                    // Note: No specific lock state variables needed for fonts, as we read the checkbox directly in generate3Fonts()
+                } else if (targetId.includes('color-toggle')) {
+                    // Color lock
+                    const colorName = e.target.getAttribute('data-color');
+                    lockStates[colorName] = e.target.checked;
                 }
-                
-                const icon = document.getElementById(lockIconId);
-                icon.classList.toggle('fa-lock', lockedState);
-                icon.classList.toggle('fa-lock-open', !lockedState);
-                icon.style.color = lockedState ? lastTheme.primary : 'var(--text-secondary)';
-                showMessage(`${type.charAt(0).toUpperCase() + type.slice(1)} Font ${lockedState ? 'LOCKED' : 'UNLOCKED'}`);
-            };
-            
-            const toggleColorLock = (colorName) => {
-                lockStates[colorName] = !lockStates[colorName];
-                const icon = document.getElementById(`${colorName}-lock`);
-                
-                icon.classList.toggle('fa-lock', lockStates[colorName]);
-                icon.classList.toggle('fa-lock-open', !lockStates[colorName]);
-                icon.style.color = lockStates[colorName] ? lastTheme.primary : 'var(--text-secondary)';
-                
-                const displayName = colorName.replace(/([A-Z])/g, ' $1').trim();
-                showMessage(`${displayName} ${lockStates[colorName] ? 'LOCKED' : 'UNLOCKED'}`);
             };
 
 
@@ -255,20 +235,22 @@
                     
                     if (!response.ok) {
                         const errorText = await response.text();
-                        throw new Error(`Proxy error (${response.status}): ${errorText.substring(0, 100)}...`);
+                        console.error(`Proxy error (${response.status}): ${errorText.substring(0, 100)}...`);
+                        // Set a visual error state without notifications
+                        generateThemeBtn.textContent = 'Error: Check Netlify Logs';
+                        generateThemeBtn.disabled = true;
+                        return;
                     }
                     
                     const data = await response.json();
                     fontsList = data.items.slice(0, 300) || []; // Get top 300 popular fonts
-                    if (fontsList.length === 0) {
-                        showMessage('Fetched successfully, but no fonts returned.', 'error');
-                    } else {
-                        showMessage('Fonts loaded securely via Netlify Function.', 'success');
+                    if (fontsList.length > 0) {
+                        console.log('Fonts loaded securely via Netlify Function.');
                     }
                 } catch (error) {
                     console.error('Error fetching fonts:', error);
-                    showMessage('Failed to load fonts. Check Netlify logs/API key.', 'error');
-                    fontsList = [];
+                    generateThemeBtn.textContent = 'Error: Failed to Load Fonts';
+                    generateThemeBtn.disabled = true;
                 }
             };
 
@@ -292,27 +274,58 @@
             };
 
             const generateColors = () => {
-                const h = Math.floor(Math.random() * 360); // Random Hue
-                const s = 70 + Math.random() * 10; // Saturation 70-80%
+                // Generate a random primary hue and saturation (High saturation for contrast)
+                const primaryH = Math.floor(Math.random() * 360); 
+                const primaryS = 75 + Math.random() * 15; // 75-90% Saturation
 
-                // Function to generate a random primary/accent color
-                const getRandomColor = (hue, sat) => hslToHex(hue, sat, 65 + Math.random() * 10);
+                // Function to generate a random HSL value and convert to Hex
+                const hslToHex = (h, s, l) => {
+                    s /= 100; l /= 100;
+                    const k = n => (n + h / 30) % 12;
+                    const a = s * Math.min(l, 1 - l);
+                    const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1));
+                    return "#" + [8, 4, 0].map(n => Math.round(f(n) * 255).toString(16).padStart(2, '0')).join('');
+                };
+
+                // Determine whether to use a dark or light primary color scheme base
+                const isDarkBase = Math.random() < 0.7; // 70% chance of a dark scheme
+
+                // CORE LOGIC: Enforce dramatic contrast
                 
-                // Keep the existing color if locked, otherwise generate a new one
-                const background = lockStates.background ? lastTheme.background : getRandomColor((h + 180) % 360, 10);
-                const cardBackground = lockStates.cardBackground ? lastTheme.cardBackground : getRandomColor((h + 180) % 360, 15);
-                const textPrimary = lockStates.textPrimary ? lastTheme.textPrimary : getRandomColor(h, 15, 95);
-                const textSecondary = lockStates.textSecondary ? lastTheme.textSecondary : getRandomColor(h, 10, 70);
-                const primary = lockStates.primary ? lastTheme.primary : getRandomColor(h, s, 65 + Math.random() * 10);
-                const accent = lockStates.accent ? lastTheme.accent : getRandomColor((h + 150) % 360, s, 65 + Math.random() * 10);
+                // Background & Card: Very low lightness/saturation for dark themes, or very high for light themes.
+                const newBackground = lockStates.background ? lastTheme.background : (
+                    isDarkBase ? hslToHex(primaryH, 5, 5 + Math.random() * 5) : hslToHex(primaryH, 5, 90 + Math.random() * 5)
+                );
+                const newCardBackground = lockStates.cardBackground ? lastTheme.cardBackground : (
+                    isDarkBase ? hslToHex(primaryH, 5, 10 + Math.random() * 5) : hslToHex(primaryH, 5, 95 + Math.random() * 5)
+                );
+
+                // Text: Highly contrasting against the background.
+                const newTextPrimary = lockStates.textPrimary ? lastTheme.textPrimary : (
+                    isDarkBase ? hslToHex(primaryH, 10, 95) : hslToHex(primaryH, 10, 10)
+                );
+                const newTextSecondary = lockStates.textSecondary ? lastTheme.textSecondary : (
+                    isDarkBase ? hslToHex(primaryH, 10, 60) : hslToHex(primaryH, 10, 40)
+                );
+
+                // Primary & Accent: High saturation to pop against the base.
+                const newPrimary = lockStates.primary ? lastTheme.primary : getRandomColor(primaryH, primaryS, 60);
+                // Use a complementary or triadic hue for the accent (150 degrees apart for high contrast)
+                const accentH = (primaryH + 150) % 360;
+                const newAccent = lockStates.accent ? lastTheme.accent : getRandomColor(accentH, primaryS, 60);
                 
+                function getRandomColor(h, s, l) {
+                    // Ensures that primary and accent are always highly saturated for 'dramatic' contrast
+                    return hslToHex(h, s, l); 
+                }
+
                 return {
-                    background,
-                    cardBackground,
-                    textPrimary,
-                    textSecondary,
-                    primary,
-                    accent,
+                    background: newBackground,
+                    cardBackground: newCardBackground,
+                    textPrimary: newTextPrimary,
+                    textSecondary: newTextSecondary,
+                    primary: newPrimary,
+                    accent: newAccent,
                 };
             };
 
@@ -325,10 +338,14 @@
 
                 const getRandomFont = () => fontsList[Math.floor(Math.random() * fontsList.length)].family;
 
-                // Only generate if unlocked
-                const headingFont = isHeadingFontLocked ? lastTheme.headingFont : getRandomFont();
-                const bodyFont = isBodyFontLocked ? lastTheme.bodyFont : getRandomFont();
-                const tertiaryFont = isTertiaryFontLocked ? lastTheme.tertiaryFont : getRandomFont();
+                // Read lock state directly from the toggle switches
+                const headingToggle = document.getElementById('heading-font-toggle');
+                const bodyToggle = document.getElementById('body-font-toggle');
+                const tertiaryToggle = document.getElementById('tertiary-font-toggle');
+
+                const headingFont = headingToggle.checked ? lastTheme.headingFont : getRandomFont();
+                const bodyFont = bodyToggle.checked ? lastTheme.bodyFont : getRandomFont();
+                const tertiaryFont = tertiaryToggle.checked ? lastTheme.tertiaryFont : getRandomFont();
                 
                 return { headingFont, bodyFont, tertiaryFont };
             };
@@ -343,17 +360,17 @@
                 switch(type) {
                     case 'heading':
                         loader = headingFontLoader;
-                        elements = ['heading-text', 'heading-font-name', 'heading-font-lock'];
+                        elements = ['heading-text', 'heading-font-name'];
                         cssVarName = '--font-heading';
                         break;
                     case 'body':
                         loader = bodyFontLoader;
-                        elements = ['body-text', 'body-font-name', 'body-font-lock'];
+                        elements = ['body-text', 'body-font-name'];
                         cssVarName = '--font-body';
                         break;
                     case 'tertiary':
                         loader = tertiaryFontLoader;
-                        elements = ['tertiary-text', 'tertiary-font-name', 'tertiary-font-lock'];
+                        elements = ['tertiary-text', 'tertiary-font-name'];
                         cssVarName = '--font-tertiary';
                         break;
                 }
@@ -392,6 +409,11 @@
                 ctaButton.style.backgroundColor = theme.primary;
                 ctaButton.style.color = theme.textPrimary; // Ensure contrast
 
+                // Update Typography text colors
+                document.getElementById('heading-text').style.color = theme.textPrimary;
+                document.getElementById('body-text').style.color = theme.textPrimary;
+                document.getElementById('tertiary-text').style.color = theme.textPrimary;
+                
                 // Update Typography
                 loadAndApplyFont('heading', theme.headingFont);
                 loadAndApplyFont('body', theme.bodyFont);
@@ -415,8 +437,7 @@
                 ];
 
                 colors.forEach(color => {
-                    const lockIconState = lockStates[color.name] ? 'fa-lock' : 'fa-lock-open';
-                    const lockIconColor = lockStates[color.name] ? theme.primary : 'var(--text-secondary)';
+                    const isLocked = lockStates[color.name];
 
                     const div = document.createElement('div');
                     div.className = 'color-block-container';
@@ -424,10 +445,17 @@
                         <div class="w-16 h-16 rounded-lg ring-2 ring-gray-700 hover:ring-white transition-all cursor-pointer mb-1" style="background-color: ${color.var};"></div>
                         <span class="text-xs font-medium text-gray-300">${color.label}</span>
                         <span class="text-xs font-mono text-white">${color.var}</span>
-                        <i id="${color.name}-lock" class="lock-icon fas ${lockIconState} text-sm mt-1" style="color: ${lockIconColor};"></i>
+                        
+                        <!-- Toggle Switch -->
+                        <label class="toggle-switch relative inline-block w-12 h-6 mt-1">
+                            <input type="checkbox" id="${color.name}-color-toggle" class="opacity-0 w-0 h-0" data-color="${color.name}" ${isLocked ? 'checked' : ''}>
+                            <span class="slider absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full"></span>
+                            <span class="slider before:absolute before:content-[''] before:h-5 before:w-5 before:left-[2px] before:bottom-[2px] before:rounded-full"></span>
+                        </label>
                     `;
                     paletteContainer.appendChild(div);
-                    document.getElementById(`${color.name}-lock`).addEventListener('click', () => toggleColorLock(color.name));
+                    // Attach click listener to the newly created checkbox
+                    document.getElementById(`${color.name}-color-toggle`).addEventListener('change', handleLockToggle);
                 });
             };
 
@@ -456,39 +484,30 @@
                 window.getSelection().addRange(range);
                 try {
                     const successful = document.execCommand('copy');
-                    if (successful) {
-                        showMessage('CSS Variables copied to clipboard!');
-                    } else {
+                    if (!successful) {
                         throw new Error('Fallback copy failed');
                     }
                 } catch (err) {
-                    showMessage('Failed to copy. Please copy manually.', 'error');
+                    console.error('Failed to copy. Please copy manually.', err);
+                    alert('Failed to copy. Please copy manually.'); // Keeping alert as last resort fallback for copy
                 }
                 window.getSelection().removeAllRanges();
             };
 
-            // --- UTILITY ---
-            const hslToHex = (h, s, l) => {
-                s /= 100; l /= 100;
-                const k = n => (n + h / 30) % 12;
-                const a = s * Math.min(l, 1 - l);
-                const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1));
-                return "#" + [8, 4, 0].map(n => Math.round(f(n) * 255).toString(16).padStart(2, '0')).join('');
-            };
-
             // --- Event Listeners and Initialization ---
 
-            const attachLockListeners = () => {
-                document.getElementById('heading-font-lock').addEventListener('click', () => toggleFontLock('heading'));
-                document.getElementById('body-font-lock').addEventListener('click', () => toggleFontLock('body'));
-                document.getElementById('tertiary-font-lock').addEventListener('click', () => toggleFontLock('tertiary'));
+            const attachListeners = () => {
+                generateThemeBtn.addEventListener('click', generateTheme);
+                copyCssBtn.addEventListener('click', copyCss);
+
+                // Attach listeners for font toggles
+                document.getElementById('heading-font-toggle').addEventListener('change', handleLockToggle);
+                document.getElementById('body-font-toggle').addEventListener('change', handleLockToggle);
+                document.getElementById('tertiary-font-toggle').addEventListener('change', handleLockToggle);
             };
 
             const init = () => {
-                // Attach main listeners
-                generateThemeBtn.addEventListener('click', generateTheme);
-                copyCssBtn.addEventListener('click', copyCss);
-                attachLockListeners();
+                attachListeners();
                 
                 // Initial load: fetch fonts and generate default theme
                 fetchFonts();
@@ -501,3 +520,4 @@
     </script>
 </body>
 </html>
+
