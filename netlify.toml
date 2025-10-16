@@ -1,1 +1,7 @@
-[build]The directory containing your index.htmlpublish = "."The directory where Netlify will look for your serverless functionsfunctions = "netlify/functions"[functions]Configure Netlify to use a Node bundler for function packagingnode_bundler = "esbuild"
+[build]
+publish = "."
+functions = "netlify/functions"
+
+[functions]
+node_bundler = "esbuild"
+
