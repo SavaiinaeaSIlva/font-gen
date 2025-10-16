@@ -12,9 +12,13 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #000000; /* Site Background is fixed to Pure Black (locked) */
+            background-color: #000000 !important; /* Site Background is fixed to Pure Black (locked) */
             color: #e5e7eb;
             --transition-speed: 0.5s;
+        }
+        /* Force containers transparent */
+        .container, .color-block-container, .font-display {
+            background-color: transparent !important;
         }
         /* Smooth transitions for themeable elements */
         #theme-dashboard, .color-block, .font-display, #cta-button {
@@ -29,15 +33,17 @@
             display: none;
         }
         .code-block {
-            background-color: rgba(26,26,26,0.95); /* Slightly lighter panel against pure black */
+            background-color: transparent !important;
             border: 1px solid rgba(255,255,255,0.04);
+            backdrop-filter: brightness(0.8);
         }
 
         /* Panels that should sit on the black background */
         .font-display, .code-block, .color-block-container {
-            background-color: var(--card-background);
+            background-color: transparent !important;
             border: 1px solid rgba(255,255,255,0.03);
             box-shadow: none;
+            backdrop-filter: brightness(0.7);
         }
 
         footer {
@@ -94,10 +100,28 @@
     <link id="heading-font-loader" rel="stylesheet" href="">
     <link id="body-font-loader" rel="stylesheet" href="">
     <link id="tertiary-font-loader" rel="stylesheet" href="">
+    <link id="title-font-loader" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Castoro+Titling&display=swap">
 
     <header class="bg-transparent p-4 sticky top-0 z-10">
         <div class="container mx-auto flex flex-wrap items-center justify-between gap-4">
-            <h1 class="text-3xl font-extrabold text-white">This shit should be free</h1>
+            <div class="flex items-center space-x-4">
+                <h1 id="site-title" class="text-3xl font-extrabold text-white" style="font-family: 'Castoro Titling', serif;">This shit should be free</h1>
+                <div class="hidden sm:flex items-center space-x-2">
+                    <select id="color-preset" class="bg-gray-800 text-white text-sm py-2 px-3 rounded-md">
+                        <option value="random">Random</option>
+                        <option value="grayscale">Grayscale</option>
+                        <option value="monochrome">Monochromatic</option>
+                        <option value="complementary">Complementary</option>
+                        <option value="analogous">Analogous</option>
+                    </select>
+                    <select id="font-preset" class="bg-gray-800 text-white text-sm py-2 px-3 rounded-md">
+                        <option value="random">Random</option>
+                        <option value="low">Low Contrast</option>
+                        <option value="similar">Similar</option>
+                        <option value="high">High Contrast</option>
+                    </select>
+                </div>
+            </div>
             <button id="generate-theme-btn" class="bg-indigo-700 hover:bg-indigo-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-800">
                 Generate Look
             </button>
@@ -208,6 +232,8 @@
 
             // --- State and Constants ---
             let fontsList = [];
+            const colorPresetSelect = document.getElementById('color-preset');
+            const fontPresetSelect = document.getElementById('font-preset');
             
             // Background is now initially UNLOCKED (false) so it can change in the generator.
             const lockStates = {
@@ -297,8 +323,22 @@
             };
 
             const generateColors = () => {
-                const primaryH = Math.floor(Math.random() * 360); 
-                const primaryS = 85 + Math.random() * 10; 
+                // Base hue and saturation to start with
+                const primaryH = Math.floor(Math.random() * 360);
+                let primaryS = 85 + Math.random() * 10;
+
+                // Apply color preset adjustments
+                const colorPreset = colorPresetSelect ? colorPresetSelect.value : 'random';
+                if (colorPreset === 'grayscale') {
+                    primaryS = 0;
+                } else if (colorPreset === 'monochrome') {
+                    primaryS = 10 + Math.random() * 20;
+                } else if (colorPreset === 'complementary') {
+                    // keep saturation higher for vivid pair
+                    primaryS = 70 + Math.random() * 20;
+                } else if (colorPreset === 'analogous') {
+                    primaryS = 60 + Math.random() * 20;
+                }
 
                 const hslToHex = (h, s, l) => {
                     s /= 100; l /= 100;
@@ -330,8 +370,11 @@
                     isDarkBase ? hslToHex(primaryH, 10, 60) : hslToHex(primaryH, 10, 40)
                 );
 
+                // Choose primary/accent based on preset (complementary uses 180 offset, analogous uses ±30)
                 const newPrimary = lockStates.primary ? lastTheme.primary : getRandomColor(primaryH, primaryS, 60);
-                const accentH = (primaryH + 150) % 360;
+                let accentH = (primaryH + 150) % 360;
+                if (colorPreset === 'complementary') accentH = (primaryH + 180) % 360;
+                if (colorPreset === 'analogous') accentH = (primaryH + 30) % 360;
                 const newAccent = lockStates.accent ? lastTheme.accent : getRandomColor(accentH, primaryS, 60);
                 
                 function getRandomColor(h, s, l) {
@@ -362,9 +405,40 @@
                 const bodyToggle = document.getElementById('body-font-toggle');
                 const tertiaryToggle = document.getElementById('tertiary-font-toggle');
 
-                const headingFont = headingToggle && headingToggle.checked ? lastTheme.headingFont : getRandomFont();
-                const bodyFont = bodyToggle && bodyToggle.checked ? lastTheme.bodyFont : getRandomFont();
-                const tertiaryFont = tertiaryToggle && tertiaryToggle.checked ? lastTheme.tertiaryFont : getRandomFont();
+                const fontPreset = fontPresetSelect ? fontPresetSelect.value : 'random';
+
+                // Helper to pick fonts respecting contrast preset. Simple heuristic: choose fonts with different starting letters or random.
+                const pickFontByContrast = (level) => {
+                    if (level === 'random') return getRandomFont();
+                    // For low contrast, attempt to pick fonts with same first letter (naive but deterministic)
+                    if (level === 'low') {
+                        const f = getRandomFont();
+                        const same = fontsList.find(fn => fn.family[0] === f[0] && fn.family !== f);
+                        return same ? same.family : f;
+                    }
+                    if (level === 'similar') {
+                        // pick fonts from same category (heuristic: serif vs sans based on name)
+                        const f = getRandomFont();
+                        const isSerif = /serif|times|georgia|playfair|castoro/i.test(f);
+                        const similar = fontsList.find(fn => {
+                            const name = fn.family;
+                            const serif = /serif|times|georgia|playfair|castoro/i.test(name);
+                            return serif === isSerif && name !== f;
+                        });
+                        return similar ? similar.family : f;
+                    }
+                    // high contrast: try to pick very different names
+                    if (level === 'high') {
+                        const f = getRandomFont();
+                        const different = fontsList.find(fn => fn.family[0] !== f[0]);
+                        return different ? different.family : f;
+                    }
+                    return getRandomFont();
+                };
+
+                const headingFont = headingToggle && headingToggle.checked ? lastTheme.headingFont : pickFontByContrast(fontPreset);
+                const bodyFont = bodyToggle && bodyToggle.checked ? lastTheme.bodyFont : pickFontByContrast(fontPreset);
+                const tertiaryFont = tertiaryToggle && tertiaryToggle.checked ? lastTheme.tertiaryFont : pickFontByContrast(fontPreset);
                 
                 return { headingFont, bodyFont, tertiaryFont };
             };
@@ -528,6 +602,8 @@
                 if (hfToggle) hfToggle.addEventListener('change', handleLockToggle);
                 if (bfToggle) bfToggle.addEventListener('change', handleLockToggle);
                 if (tfToggle) tfToggle.addEventListener('change', handleLockToggle);
+                if (colorPresetSelect) colorPresetSelect.addEventListener('change', generateTheme);
+                if (fontPresetSelect) fontPresetSelect.addEventListener('change', generateTheme);
             };
 
             const init = () => {
