@@ -3,430 +3,423 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamic Theme Generator</title>
+    <title>This shit should be free</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://kit.fontawesome.com/a7c9367c3b.js" crossorigin="anonymous"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        :root {
-            /* Default Colors */
-            --background: #0a0a0a;
-            --card-background: #141414;
-            --text-primary: #ffffff;
-            --text-secondary: #cccccc;
-            --primary: #4fd1c5;
-            --accent: #f6ad55;
-        }
         body {
             font-family: 'Inter', sans-serif;
-            transition: background-color 0.5s ease;
-            background-color: var(--background) !important;
+            background-color: #000000; /* Pure Black Background */
+            --transition-speed: 0.5s;
         }
-        #heading-font-loader, #body-font-loader, #secondary-font-loader {
+        /* Smooth transitions for themeable elements */
+        #theme-dashboard, .color-block, .font-display, #cta-button {
+            transition: all var(--transition-speed) ease;
+        }
+        /* Style for the dynamic font loader links */
+        #heading-font-loader, #body-font-loader, #tertiary-font-loader {
             display: none;
         }
         .code-block {
-            background-color: #0a0a0a; 
-            border: 1px solid #333333;
-        }
-        #message-box {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-20px);
-            transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
-        }
-        #message-box.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-        .color-swatch-label {
-            color: var(--text-primary);
-            text-shadow: 0 0 4px #000000;
-        }
-        /* Remove background and shadows from containers for the "pure black" theme */
-        #theme-dashboard, .theme-container-bg, .font-sample-container {
-            background-color: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            padding: 0 !important;
-        }
-        /* Ensure header retains its dark background for contrast */
-        header {
-            background-color: #0a0a0a !important; 
-            border-bottom: 1px solid #111111;
+            background-color: #1a1a1a; /* Dark gray for contrast with black background */
+            border: 1px solid #444;
         }
         .lock-icon {
             cursor: pointer;
-            transition: color 0.2s;
-        }
-        .text-unlocked { color: #ccc; }
-        .text-locked { color: var(--primary); }
-        #preview-cta-btn {
-            background-color: var(--primary);
-            color: var(--background);
-            transition: background-color 0.2s, transform 0.2s;
-        }
-        #preview-cta-btn:hover {
-            /* Use accent color on hover - no JS needed! */
-            background-color: var(--accent) !important;
-            transform: scale(1.05);
+            transition: color 0.3s ease;
         }
     </style>
 </head>
-<body class="bg-gray-900">
+<body class="bg-black min-h-screen flex flex-col">
 
     <!-- Dynamically loaded font stylesheets -->
     <link id="heading-font-loader" rel="stylesheet" href="">
     <link id="body-font-loader" rel="stylesheet" href="">
-    <link id="secondary-font-loader" rel="stylesheet" href="">
+    <link id="tertiary-font-loader" rel="stylesheet" href="">
 
-    <div id="message-box" class="p-4 rounded-lg shadow-xl text-sm max-w-sm" role="alert">
-        <div id="message-content" class="text-white"></div>
-    </div>
+    <!-- Notification Message Box -->
+    <div id="message-box" class="fixed top-4 right-4 bg-gray-700 text-white p-3 rounded-lg shadow-xl z-50 transition-opacity duration-300 opacity-0 pointer-events-none"></div>
 
-    <header class="p-4 border-b border-gray-900 sticky top-0 z-10">
+    <!-- Controls Panel -->
+    <header class="bg-black p-4 sticky top-0 z-10 border-b border-gray-800">
         <div class="container mx-auto flex flex-wrap items-center justify-between gap-4">
-            <div class="flex items-center gap-4">
-                <h1 class="text-2xl font-bold text-white">Theme Generator</h1>
-                <button id="generate-theme-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-5 rounded-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:opacity-50">
-                    Generate Look
-                </button>
-            </div>
-            <div class="flex items-center text-sm text-gray-400">
-                <p>Fonts powered by Netlify Functions.</p>
-            </div>
+            <h1 class="text-3xl font-extrabold text-white">This shit should be free</h1>
+            <button id="generate-theme-btn" class="bg-indigo-700 hover:bg-indigo-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-indigo-800 shadow-md">
+                Generate Look
+            </button>
+            <p class="text-sm text-gray-500 hidden sm:block">Fonts powered by Netlify Functions proxy.</p>
         </div>
     </header>
 
-    <main class="min-h-screen p-8" id="theme-dashboard">
-        <div class="max-w-6xl mx-auto">
-            
-            <h2 id="current-theme-title" class="text-4xl font-extrabold mb-8 text-center text-white">Current Theme Dashboard</h2>
-            
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-12">
-                <div id="swatch-color-scheme" class="h-32 rounded-lg flex flex-col items-center justify-center border-4 border-white/5 bg-gray-800">
-                    <span class="font-bold text-lg text-white mb-2">Color Scheme</span>
-                    <i id="lock-color-scheme" class="fa-solid fa-lock-open lock-icon text-unlocked"></i>
-                </div>
-                <div id="swatch-primary" class="h-32 rounded-lg flex items-center justify-center border-4 border-white/5">
-                    <span class="font-bold color-swatch-label">Primary</span>
-                </div>
-                <div id="swatch-accent" class="h-32 rounded-lg flex items-center justify-center border-4 border-white/5">
-                    <span class="font-bold color-swatch-label">Accent</span>
-                </div>
-                <div id="swatch-background" class="h-32 rounded-lg flex items-center justify-center border-4 border-white/5">
-                    <span class="font-bold color-swatch-label">Background</span>
-                </div>
-                <div id="swatch-text-primary-visual" class="h-32 rounded-lg flex items-center justify-center border-4 border-white/5 bg-gray-900">
-                    <span class="font-bold color-swatch-label">Text</span>
-                </div>
-            </div>
+    <!-- Theme Dashboard -->
+    <main id="theme-dashboard" class="flex-grow container mx-auto p-6 md:p-10 flex flex-col items-center justify-center space-y-12">
 
-            <div class="theme-container-bg p-8 rounded-xl">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-                    <div class="font-sample-container">
-                        <p class="text-gray-400 mb-2 text-sm">
-                            Heading Font: 
-                            <span id="heading-font-name" class="font-medium text-white">Inter</span>
-                            <i id="lock-heading-font" class="fa-solid fa-lock-open lock-icon text-unlocked ml-2"></i>
-                        </p>
-                        <h3 id="font-sample-heading" class="text-4xl text-white leading-tight">Theme Title Heading</h3>
-                    </div>
-                    <div class="font-sample-container">
-                        <p class="text-gray-400 mb-2 text-sm">
-                            Body Font: 
-                            <span id="body-font-name" class="font-medium text-white">Inter</span>
-                            <i id="lock-body-font" class="fa-solid fa-lock-open lock-icon text-unlocked ml-2"></i>
-                        </p>
-                        <p id="font-sample-body-1" class="text-lg text-gray-200 leading-relaxed">The quick brown fox jumps over the lazy dog. Use this for paragraphs and menus.</p>
-                    </div>
-                    <div class="font-sample-container">
-                        <p class="text-gray-400 mb-2 text-sm">
-                            Secondary Font: 
-                            <span id="secondary-font-name" class="font-medium text-white">Inter</span>
-                            <i id="lock-secondary-font" class="fa-solid fa-lock-open lock-icon text-unlocked ml-2"></i>
-                        </p>
-                        <p id="font-sample-body-2" class="text-sm text-gray-400 leading-relaxed">This smaller text can be used for captions or code snippets. 1234567890.</p>
-                    </div>
-                </div>
-                
-                <div class="text-center mt-6">
-                    <button id="preview-cta-btn" class="text-xl font-bold px-10 py-4 rounded-lg">
-                        Call to Action
-                    </button>
-                </div>
+        <!-- Color Palette Row -->
+        <section class="w-full max-w-5xl">
+            <h2 class="text-xl font-semibold text-white mb-6 text-center">Color Palette</h2>
+            <div id="color-palette" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
+                <!-- Color Block Template -->
             </div>
+        </section>
 
-            <div class="max-w-3xl mx-auto mt-12">
+        <!-- Typography Display Row -->
+        <section class="w-full max-w-5xl">
+            <h2 class="text-xl font-semibold text-white mb-6 text-center">Typography Pairing</h2>
+            <div class="space-y-6">
+
+                <!-- Heading Font -->
+                <div class="font-display flex items-center p-4 rounded-xl">
+                    <h3 id="heading-text" class="text-4xl text-white font-bold flex-grow">Heading Font Example</h3>
+                    <div class="flex items-center space-x-3">
+                        <span id="heading-font-name" class="text-lg text-gray-400">Inter</span>
+                        <i id="heading-font-lock" class="lock-icon fas fa-lock-open text-gray-500 hover:text-white" data-font="heading"></i>
+                    </div>
+                </div>
+
+                <!-- Body Font -->
+                <div class="font-display flex items-center p-4 rounded-xl">
+                    <h3 id="body-text" class="text-xl text-white flex-grow">Body Font Paragraph Text is here.</h3>
+                    <div class="flex items-center space-x-3">
+                        <span id="body-font-name" class="text-lg text-gray-400">Inter</span>
+                        <i id="body-font-lock" class="lock-icon fas fa-lock-open text-gray-500 hover:text-white" data-font="body"></i>
+                    </div>
+                </div>
+
+                <!-- Tertiary Font -->
+                <div class="font-display flex items-center p-4 rounded-xl">
+                    <h3 id="tertiary-text" class="text-base text-white flex-grow italic">Tertiary Font for small print or captions.</h3>
+                    <div class="flex items-center space-x-3">
+                        <span id="tertiary-font-name" class="text-lg text-gray-400">Inter</span>
+                        <i id="tertiary-font-lock" class="lock-icon fas fa-lock-open text-gray-500 hover:text-white" data-font="tertiary"></i>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Call to Action Button -->
+        <section class="w-full max-w-5xl flex justify-center">
+            <button id="cta-button" class="text-white text-xl font-bold px-10 py-5 rounded-full shadow-2xl transition-transform duration-300 hover:scale-105">
+                Call to Action Button
+            </button>
+        </section>
+
+        <!-- Code Snippets Section -->
+        <section class="w-full max-w-4xl pt-8">
+            <div class="max-w-3xl mx-auto">
                 <div class="flex items-center justify-between mb-2">
                     <h3 class="text-lg font-semibold text-indigo-300">CSS Variables</h3>
                     <button id="copy-css-btn" class="text-sm bg-gray-700 hover:bg-gray-600 text-white py-1 px-3 rounded-md">Copy</button>
                 </div>
-                <pre class="code-block text-sm p-4 rounded-lg overflow-x-auto"><code id="css-code" class="text-white"></code></pre>
-            </div>
-        </div>
-    </main>
+                <pre class="code-block text-sm p-4 rounded-lg overflow-x-auto"><code id="css-code" class="text-white">:root {
+    /* Colors */
+    --background: #000000;
+    --text-primary: #ffffff;
+    --text-secondary: #aaaaaa;
+    --primary: #00bcd4;
+    --accent: #ff9800;
+    --card-background: #1a1a1a;
     
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    /* Fonts */
+    --font-heading: 'Inter', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-tertiary: 'Inter', sans-serif;
+}</code></pre>
+            </div>
+        </section>
 
-        // --- CONFIGURATION & CONSTANTS ---
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-        let firebaseConfig = {};
-        try {
-            firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-        } catch (e) {
-            console.error("Failed to parse Firebase config:", e);
-            alert("Application configuration is corrupted. Please refresh the page.");
-        }
-        
-        const defaultTheme = {
-            background: '#0a0a0a', cardBackground: '#141414',
-            textPrimary: '#ffffff', textSecondary: '#cccccc',
-            primary: '#4fd1c5', accent: '#f6ad55',
-            headingFont: 'Inter', bodyFont: 'Inter', secondaryFont: 'Inter'
-        };
+    </main>
 
-        const PROXY_ENDPOINT = '/.netlify/functions/get-fonts';
+    <footer class="text-center py-4 text-gray-500 text-xs mt-auto">
+        &copy; 2025 This shit should be free.
+    </footer>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Elements ---
+            const generateThemeBtn = document.getElementById('generate-theme-btn');
+            const cssCode = document.getElementById('css-code');
+            const copyCssBtn = document.getElementById('copy-css-btn');
+            const headingFontLoader = document.getElementById('heading-font-loader');
+            const bodyFontLoader = document.getElementById('body-font-loader');
+            const tertiaryFontLoader = document.getElementById('tertiary-font-loader');
+            const messageBox = document.getElementById('message-box');
+            const ctaButton = document.getElementById('cta-button');
 
-        // --- FIREBASE INITIALIZATION ---
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        const LAST_THEME_PATH = (userId) => doc(db, 'artifacts', appId, 'users', userId, 'settings', 'last_theme');
-
-        // --- APPLICATION STATE ---
-        let fontsList = [];
-        let userId = null; 
-        let currentTheme = { ...defaultTheme };
-        const lockState = {
-            color: false,
-            headingFont: false,
-            bodyFont: false,
-            secondaryFont: false,
-        };
-
-        // --- DOM ELEMENTS ---
-        const DOMElements = {
-            messageBox: document.getElementById('message-box'),
-            messageContent: document.getElementById('message-content'),
-            generateThemeBtn: document.getElementById('generate-theme-btn'),
-            copyCssBtn: document.getElementById('copy-css-btn'),
-            cssCode: document.getElementById('css-code'),
-            fontLoaders: {
-                heading: document.getElementById('heading-font-loader'),
-                body: document.getElementById('body-font-loader'),
-                secondary: document.getElementById('secondary-font-loader'),
-            },
-            locks: {
-                color: document.getElementById('lock-color-scheme'),
-                headingFont: document.getElementById('lock-heading-font'),
-                bodyFont: document.getElementById('lock-body-font'),
-                secondaryFont: document.getElementById('lock-secondary-font'),
-            },
-            fontNames: {
-                heading: document.getElementById('heading-font-name'),
-                body: document.getElementById('body-font-name'),
-                secondary: document.getElementById('secondary-font-name'),
-            },
-            fontSamples: {
-                heading: document.getElementById('font-sample-heading'),
-                body: document.getElementById('font-sample-body-1'),
-                secondary: document.getElementById('font-sample-body-2'),
-            },
-            swatches: {
-                primary: document.getElementById('swatch-primary'),
-                accent: document.getElementById('swatch-accent'),
-                background: document.getElementById('swatch-background'),
-                text: document.getElementById('swatch-text-primary-visual'),
-            },
-            ctaBtn: document.getElementById('preview-cta-btn'),
-        };
-        let messageTimeout;
-
-        // --- UI & MESSAGING ---
-        const showMessage = (text, type = 'info') => {
-            clearTimeout(messageTimeout);
-            const typeColors = {
-                success: 'bg-emerald-600',
-                error: 'bg-red-600',
-                info: 'bg-indigo-600',
+            // --- State and Constants ---
+            let fontsList = [];
+            let isColorsLocked = false;
+            let isHeadingFontLocked = false;
+            let isBodyFontLocked = false;
+            let isTertiaryFontLocked = false;
+            let lastTheme = {
+                background: '#000000',
+                cardBackground: '#1a1a1a',
+                textPrimary: '#ffffff',
+                textSecondary: '#aaaaaa',
+                primary: '#00bcd4',
+                accent: '#ff9800',
+                headingFont: 'Inter',
+                bodyFont: 'Inter',
+                tertiaryFont: 'Inter',
             };
-            DOMElements.messageBox.className = `p-4 rounded-lg shadow-xl text-sm max-w-sm show ${typeColors[type] || typeColors.info}`;
-            DOMElements.messageContent.textContent = text;
-            messageTimeout = setTimeout(() => DOMElements.messageBox.classList.remove('show'), 3000);
-        };
 
-        // --- LOCKS & STATE MANAGEMENT ---
-        const toggleLock = (lockType) => {
-            const element = DOMElements.locks[lockType];
-            if (!element) return;
-            
-            lockState[lockType] = !lockState[lockType];
-            
-            const isLocked = lockState[lockType];
-            element.classList.toggle('fa-lock-open', !isLocked);
-            element.classList.toggle('text-unlocked', !isLocked);
-            element.classList.toggle('fa-lock', isLocked);
-            element.classList.toggle('text-locked', isLocked);
+            // --- UI/UX Utilities ---
 
-            // Also update the color of the icon itself
-            element.style.color = isLocked ? currentTheme.primary : '#ccc';
-
-            const formattedName = lockType.replace('Font', ' Font').replace(/([A-Z])/g, ' $1').trim().toLowerCase();
-            showMessage(`Theme ${formattedName} ${isLocked ? 'locked' : 'unlocked'}.`, 'info');
-        };
-
-        // --- API & DATA FETCHING ---
-        const fetchFonts = async () => {
-            if (fontsList.length > 0) return;
-            
-            DOMElements.generateThemeBtn.disabled = true;
-            DOMElements.generateThemeBtn.textContent = "Fetching Fonts...";
-
-            try {
-                const response = await fetch(PROXY_ENDPOINT);
-                if (!response.ok) throw new Error(`Proxy Error: ${response.status}`);
+            const showMessage = (text, type = 'success') => {
+                messageBox.textContent = text;
+                messageBox.className = `fixed top-4 right-4 p-3 rounded-lg shadow-xl z-50 transition-opacity duration-300 opacity-100 pointer-events-auto`;
                 
-                const data = await response.json();
-                fontsList = data.items.slice(0, 300) || []; 
-                
-                if (fontsList.length === 0) {
-                    showMessage('Proxy returned no fonts. Check Netlify function logs.', 'error');
+                if (type === 'error') {
+                    messageBox.style.backgroundColor = '#dc2626'; // Tailwind red-600
                 } else {
-                    showMessage(`Loaded ${fontsList.length} fonts. Ready to generate.`, 'success');
+                    messageBox.style.backgroundColor = '#10b981'; // Tailwind emerald-500
                 }
-            } catch (error) {
-                console.error('Error fetching fonts:', error);
-                showMessage('Failed to fetch fonts. Check proxy function logs.', 'error');
-            } finally {
-                DOMElements.generateThemeBtn.disabled = false;
-                DOMElements.generateThemeBtn.textContent = "Generate Look";
-            }
-        };
 
-        const saveCurrentTheme = async (theme) => {
-             if (!userId) return;
-             try {
-                 await setDoc(LAST_THEME_PATH(userId), theme);
-             } catch (e) {
-                 console.error('Error saving last theme:', e);
-             }
-        };
-
-        const loadLastTheme = async () => {
-             if (!userId) {
-                 applyTheme(currentTheme);
-                 return;
-             } 
-             try {
-                 const docSnap = await getDoc(LAST_THEME_PATH(userId));
-                 if (docSnap.exists()) {
-                     applyTheme({ ...defaultTheme, ...docSnap.data() });
-                     showMessage('Last saved theme loaded.', 'info');
-                 } else {
-                     applyTheme(currentTheme);
-                 }
-             } catch (e) {
-                 console.error('Error loading last theme:', e);
-                 applyTheme(currentTheme);
-             }
-        };
-
-        // --- CORE THEME GENERATION ---
-        const generateTheme = () => {
-            if (fontsList.length < 3) {
-                fetchFonts();
-                return showMessage('Fetching fonts. Please try again in a moment.', 'info');
-            }
-            
-            const newColors = lockState.color ? {} : generateColors();
-            const newFonts = generateFonts(); 
-            
-            const newTheme = { ...currentTheme, ...newColors, ...newFonts };
-            applyTheme(newTheme);
-        };
-
-        const generateColors = () => {
-            const h = Math.floor(Math.random() * 360);
-            const s = 70 + Math.random() * 15;
-            const l = 55 + Math.random() * 15;
-            
-            return {
-                primary: hslToHex(h, s, l),
-                accent: hslToHex((h + 150) % 360, s, l), 
-                background: hslToHex((h + 180) % 360, 5, 4),
-                cardBackground: hslToHex((h + 180) % 360, 5, 8),
-                textPrimary: hslToHex(0, 0, 98),
-                textSecondary: hslToHex(0, 0, 75),
+                setTimeout(() => {
+                    messageBox.classList.remove('opacity-100');
+                    messageBox.classList.add('opacity-0');
+                    messageBox.classList.add('pointer-events-none');
+                }, 3000);
             };
-        };
 
-        const generateFonts = () => {
-            const shuffled = [...fontsList].sort(() => 0.5 - Math.random());
-            let fontIndex = 0;
-            return {
-                headingFont: lockState.headingFont ? currentTheme.headingFont : shuffled[fontIndex++].family,
-                bodyFont: lockState.bodyFont ? currentTheme.bodyFont : shuffled[fontIndex++].family,
-                secondaryFont: lockState.secondaryFont ? currentTheme.secondaryFont : shuffled[fontIndex++].family,
-            };
-        };
-
-        // --- THEME APPLICATION LOGIC ---
-        const applyThemeColors = (theme) => {
-            const root = document.documentElement;
-            root.style.setProperty('--background', theme.background);
-            root.style.setProperty('--card-background', theme.cardBackground);
-            root.style.setProperty('--text-primary', theme.textPrimary);
-            root.style.setProperty('--text-secondary', theme.textSecondary);
-            root.style.setProperty('--primary', theme.primary);
-            root.style.setProperty('--accent', theme.accent);
-
-            DOMElements.swatches.primary.style.backgroundColor = theme.primary;
-            DOMElements.swatches.accent.style.backgroundColor = theme.accent;
-            DOMElements.swatches.background.style.backgroundColor = theme.background;
-            DOMElements.swatches.text.style.backgroundColor = theme.background;
-            DOMElements.swatches.text.querySelector('span').style.color = theme.textPrimary;
-            
-            Object.values(DOMElements.locks).forEach(lock => {
-                if(lock.classList.contains('text-locked')) {
-                    lock.style.color = theme.primary;
+            const toggleLock = (type) => {
+                const lockIcon = document.getElementById(`${type}-font-lock`);
+                
+                if (type === 'colors') {
+                    isColorsLocked = !isColorsLocked;
+                    lockIcon.classList.toggle('fa-lock', isColorsLocked);
+                    lockIcon.classList.toggle('fa-lock-open', !isColorsLocked);
+                    lockIcon.style.color = isColorsLocked ? lastTheme.primary : '';
+                    showMessage(`Colors ${isColorsLocked ? 'LOCKED' : 'UNLOCKED'}`);
+                    return;
                 }
-            });
-        };
 
-        const applyThemeFonts = (theme) => {
-            loadAndApplyFont(theme.headingFont, 'heading');
-            loadAndApplyFont(theme.bodyFont, 'body');
-            loadAndApplyFont(theme.secondaryFont, 'secondary');
+                let lockedState, lockIconId;
+                switch(type) {
+                    case 'heading':
+                        isHeadingFontLocked = !isHeadingFontLocked;
+                        lockedState = isHeadingFontLocked;
+                        lockIconId = 'heading-font-lock';
+                        break;
+                    case 'body':
+                        isBodyFontLocked = !isBodyFontLocked;
+                        lockedState = isBodyFontLocked;
+                        lockIconId = 'body-font-lock';
+                        break;
+                    case 'tertiary':
+                        isTertiaryFontLocked = !isTertiaryFontLocked;
+                        lockedState = isTertiaryFontLocked;
+                        lockIconId = 'tertiary-font-lock';
+                        break;
+                }
+                
+                const icon = document.getElementById(lockIconId);
+                icon.classList.toggle('fa-lock', lockedState);
+                icon.classList.toggle('fa-lock-open', !lockedState);
+                icon.style.color = lockedState ? lastTheme.primary : '';
+                showMessage(`${type.charAt(0).toUpperCase() + type.slice(1)} Font ${lockedState ? 'LOCKED' : 'UNLOCKED'}`);
+            };
 
-            DOMElements.fontNames.heading.textContent = theme.headingFont;
-            DOMElements.fontNames.body.textContent = theme.bodyFont;
-            DOMElements.fontNames.secondary.textContent = theme.secondaryFont;
+            // --- API & FONT FETCHING ---
+            
+            // This function now calls the Netlify function proxy securely
+            const fetchFonts = async () => {
+                if (fontsList.length > 0) return; // Only fetch once
+                try {
+                    const response = await fetch('/.netlify/functions/get-fonts');
+                    
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`Proxy error (${response.status}): ${errorText.substring(0, 100)}...`);
+                    }
+                    
+                    const data = await response.json();
+                    fontsList = data.items.slice(0, 300) || []; // Get top 300 popular fonts
+                    if (fontsList.length === 0) {
+                        showMessage('Fetched successfully, but no fonts returned.', 'error');
+                    } else {
+                        showMessage('Fonts loaded securely via Netlify Function.', 'success');
+                    }
+                } catch (error) {
+                    console.error('Error fetching fonts:', error);
+                    showMessage('Failed to load fonts. Check Netlify logs/API key.', 'error');
+                    fontsList = [];
+                }
+            };
 
-            DOMElements.fontSamples.heading.style.fontFamily = `'${theme.headingFont}', sans-serif`;
-            DOMElements.fontSamples.body.style.fontFamily = `'${theme.bodyFont}', sans-serif`;
-            DOMElements.fontSamples.secondary.style.fontFamily = `'${theme.secondaryFont}', sans-serif`;
-        };
-        
-        const loadAndApplyFont = (family, type) => {
-            if (family === 'Inter' || !DOMElements.fontLoaders[type]) return; 
-            const weights = type === 'heading' ? '700;900' : '400;500;700';
-            DOMElements.fontLoaders[type].href = `https://fonts.googleapis.com/css2?family=${family.replace(/ /g, '+')}:wght@${weights}&display=swap`;
-        };
-        
-        const updateCodeSnippets = (theme) => {
-            DOMElements.cssCode.textContent = `:root {
+            // --- THEME GENERATION LOGIC ---
+
+            const generateTheme = () => {
+                generateThemeBtn.disabled = true;
+                generateThemeBtn.textContent = 'Generating...';
+
+                const newColors = isColorsLocked ? lastTheme : generateColors();
+                const newFonts = generate3Fonts();
+
+                lastTheme = { ...newColors, ...newFonts };
+                
+                applyTheme(lastTheme);
+                
+                setTimeout(() => {
+                    generateThemeBtn.disabled = false;
+                    generateThemeBtn.textContent = 'Generate Look';
+                }, 500);
+            };
+
+            const generateColors = () => {
+                const h = Math.floor(Math.random() * 360); // Random Hue
+                const s = 70 + Math.random() * 10; // Saturation 70-80%
+                
+                // Pure black background with high-contrast text is locked in
+                const background = '#000000';
+                const cardBackground = '#1a1a1a'; // Dark gray for card blocks
+                const textPrimary = '#ffffff';
+                const textSecondary = '#aaaaaa'; 
+                
+                // Primary and Accent colors derived from random hue
+                const primary = hslToHex(h, s, 65 + Math.random() * 10);
+                const accent = hslToHex((h + 150) % 360, s, 65 + Math.random() * 10);
+                
+                return {
+                    background,
+                    cardBackground,
+                    textPrimary,
+                    textSecondary,
+                    primary,
+                    accent,
+                };
+            };
+
+            const generate3Fonts = () => {
+                if (fontsList.length < 3) return { 
+                    headingFont: lastTheme.headingFont, 
+                    bodyFont: lastTheme.bodyFont, 
+                    tertiaryFont: lastTheme.tertiaryFont 
+                };
+
+                const getRandomFont = () => fontsList[Math.floor(Math.random() * fontsList.length)].family;
+
+                // Only generate if unlocked
+                const headingFont = isHeadingFontLocked ? lastTheme.headingFont : getRandomFont();
+                const bodyFont = isBodyFontLocked ? lastTheme.bodyFont : getRandomFont();
+                const tertiaryFont = isTertiaryFontLocked ? lastTheme.tertiaryFont : getRandomFont();
+                
+                return { headingFont, bodyFont, tertiaryFont };
+            };
+
+            // --- APPLYING THEME & UPDATING UI ---
+
+            const loadAndApplyFont = (type, family) => {
+                let loader;
+                let elements;
+                let cssVarName;
+                
+                switch(type) {
+                    case 'heading':
+                        loader = headingFontLoader;
+                        elements = ['heading-text', 'heading-font-name', 'heading-font-lock'];
+                        cssVarName = '--font-heading';
+                        break;
+                    case 'body':
+                        loader = bodyFontLoader;
+                        elements = ['body-text', 'body-font-name', 'body-font-lock'];
+                        cssVarName = '--font-body';
+                        break;
+                    case 'tertiary':
+                        loader = tertiaryFontLoader;
+                        elements = ['tertiary-text', 'tertiary-font-name', 'tertiary-font-lock'];
+                        cssVarName = '--font-tertiary';
+                        break;
+                }
+                
+                // Update font loading link
+                loader.href = `https://fonts.googleapis.com/css2?family=${family.replace(/ /g, '+')}:wght@400;700;800&display=swap`;
+
+                // Apply font-family and update UI text
+                const fontStyle = `'${family}', sans-serif`;
+                elements.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.style.fontFamily = fontStyle;
+                });
+                document.getElementById(`${type}-font-name`).textContent = family;
+                document.documentElement.style.setProperty(cssVarName, fontStyle);
+            };
+
+            const applyTheme = (theme) => {
+                const root = document.documentElement;
+                
+                // Apply colors via CSS Variables
+                root.style.setProperty('--background', theme.background);
+                root.style.setProperty('--card-background', theme.cardBackground);
+                root.style.setProperty('--text-primary', theme.textPrimary);
+                root.style.setProperty('--text-secondary', theme.textSecondary);
+                root.style.setProperty('--primary', theme.primary);
+                root.style.setProperty('--accent', theme.accent);
+
+                // Update Body/Main background
+                document.body.style.backgroundColor = theme.background;
+
+                // Update Colors Row
+                renderColorPalette(theme);
+
+                // Update CTA Button
+                ctaButton.style.backgroundColor = theme.primary;
+                ctaButton.style.color = theme.textPrimary; // Ensure contrast
+
+                // Update Typography
+                loadAndApplyFont('heading', theme.headingFont);
+                loadAndApplyFont('body', theme.bodyFont);
+                loadAndApplyFont('tertiary', theme.tertiaryFont);
+                
+                // Update Code Snippets
+                updateCodeSnippets(theme);
+            };
+
+            const renderColorPalette = (theme) => {
+                const paletteContainer = document.getElementById('color-palette');
+                paletteContainer.innerHTML = '';
+                
+                const colors = [
+                    { name: 'Primary', var: theme.primary, label: 'Primary' },
+                    { name: 'Accent', var: theme.accent, label: 'Accent' },
+                    { name: 'Background', var: theme.background, label: 'Background' },
+                    { name: 'Card Background', var: theme.cardBackground, label: 'Card' },
+                    { name: 'Primary Text', var: theme.textPrimary, label: 'Text-P' },
+                    { name: 'Secondary Text', var: theme.textSecondary, label: 'Text-S' }
+                ];
+
+                colors.forEach(color => {
+                    const div = document.createElement('div');
+                    div.className = 'flex flex-col items-center space-y-2';
+                    div.innerHTML = `
+                        <div class="w-16 h-16 rounded-lg ring-2 ring-gray-700 hover:ring-white transition-all cursor-pointer" style="background-color: ${color.var};"></div>
+                        <span class="text-xs font-medium text-gray-300">${color.label}</span>
+                        <span class="text-sm font-mono text-white">${color.var}</span>
+                    `;
+                    paletteContainer.appendChild(div);
+                });
+                
+                // Add lock icon for the entire palette
+                const lockContainer = document.createElement('div');
+                lockContainer.className = 'flex flex-col items-center space-y-2 col-span-2 sm:col-span-3 lg:col-span-1 justify-center';
+                lockContainer.innerHTML = `
+                    <i id="colors-lock" class="lock-icon fas ${isColorsLocked ? 'fa-lock' : 'fa-lock-open'} text-3xl text-gray-500 hover:text-white" data-font="colors"></i>
+                    <span class="text-sm font-medium text-gray-400">Lock Colors</span>
+                `;
+                paletteContainer.appendChild(lockContainer);
+                document.getElementById('colors-lock').addEventListener('click', () => toggleLock('colors'));
+                
+                if (isColorsLocked) {
+                     document.getElementById('colors-lock').style.color = lastTheme.primary;
+                }
+            };
+
+            const updateCodeSnippets = (theme) => {
+                cssCode.textContent = `:root {
     /* Colors */
     --background: ${theme.background};
     --card-background: ${theme.cardBackground};
@@ -438,68 +431,61 @@
     /* Fonts */
     --font-heading: '${theme.headingFont}', sans-serif;
     --font-body: '${theme.bodyFont}', sans-serif;
-    --font-secondary: '${theme.secondaryFont}', sans-serif;
+    --font-tertiary: '${theme.tertiaryFont}', sans-serif;
 }`;
-        };
+            };
 
-        const applyTheme = (theme) => {
-            currentTheme = theme;
-            applyThemeColors(theme);
-            applyThemeFonts(theme);
-            updateCodeSnippets(theme);
-            saveCurrentTheme(theme);
-        };
+            const copyCss = () => {
+                // Use execCommand('copy') as navigator.clipboard.writeText() often fails in iframes
+                const range = document.createRange();
+                range.selectNode(cssCode);
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+                try {
+                    const successful = document.execCommand('copy');
+                    if (successful) {
+                        showMessage('CSS Variables copied to clipboard!');
+                    } else {
+                        throw new Error('Fallback copy failed');
+                    }
+                } catch (err) {
+                    showMessage('Failed to copy. Please copy manually.', 'error');
+                }
+                window.getSelection().removeAllRanges();
+            };
 
-        // --- UTILITIES ---
-        const copyCss = async () => {
-            try {
-                await navigator.clipboard.writeText(DOMElements.cssCode.textContent);
-                showMessage('CSS Variables copied to clipboard!', 'success');
-            } catch (err) {
-                console.error('Failed to copy CSS: ', err);
-                showMessage('Failed to copy. Please copy manually.', 'error');
-            }
-        };
+            // --- UTILITY ---
+            const hslToHex = (h, s, l) => {
+                s /= 100; l /= 100;
+                const k = n => (n + h / 30) % 12;
+                const a = s * Math.min(l, 1 - l);
+                const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1));
+                return "#" + [8, 4, 0].map(n => Math.round(f(n) * 255).toString(16).padStart(2, '0')).join('');
+            };
 
-        const hslToHex = (h, s, l) => {
-            s /= 100; l /= 100;
-            const k = n => (n + h / 30) % 12;
-            const a = s * Math.min(l, 1 - l);
-            const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1));
-            return "#" + [8, 4, 0].map(n => Math.round(f(n) * 255).toString(16).padStart(2, '0')).join('');
-        };
+            // --- Event Listeners and Initialization ---
 
-        // --- INITIALIZATION ---
-        const initApp = async () => {
-            try {
-                DOMElements.generateThemeBtn.disabled = true;
+            const attachLockListeners = () => {
+                document.getElementById('heading-font-lock').addEventListener('click', () => toggleLock('heading'));
+                document.getElementById('body-font-lock').addEventListener('click', () => toggleLock('body'));
+                document.getElementById('tertiary-font-lock').addEventListener('click', () => toggleLock('tertiary'));
+            };
 
-                const userCredential = initialAuthToken 
-                    ? await signInWithCustomToken(auth, initialAuthToken)
-                    : await signInAnonymously(auth);
-                userId = userCredential.user.uid;
+            const init = () => {
+                // Attach main listeners
+                generateThemeBtn.addEventListener('click', generateTheme);
+                copyCssBtn.addEventListener('click', copyCss);
+                attachLockListeners();
                 
-                DOMElements.generateThemeBtn.disabled = false;
-                
-                await Promise.all([fetchFonts(), loadLastTheme()]);
-                
-            } catch (e) {
-                console.error("Critical Initialization Error:", e);
-                showMessage("Failed to start session. Using default theme.", 'error');
-                applyTheme(defaultTheme);
-            }
-        };
-
-        document.addEventListener('DOMContentLoaded', () => {
-            DOMElements.generateThemeBtn.addEventListener('click', generateTheme);
-            DOMElements.copyCssBtn.addEventListener('click', copyCss);
-            DOMElements.locks.color.addEventListener('click', () => toggleLock('color'));
-            DOMElements.locks.headingFont.addEventListener('click', () => toggleLock('headingFont'));
-            DOMElements.locks.bodyFont.addEventListener('click', () => toggleLock('bodyFont'));
-            DOMElements.locks.secondaryFont.addEventListener('click', () => toggleLock('secondaryFont'));
+                // Initial load: fetch fonts and generate default theme
+                fetchFonts();
+                applyTheme(lastTheme); 
+            };
             
-            initApp();
+            init();
+
         });
     </script>
 </body>
 </html>
+
