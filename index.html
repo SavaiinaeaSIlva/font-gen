@@ -12,7 +12,7 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #000000; /* Pure Black Background */
+            background-color: #000000; /* Pure Black Background for the entire site */
             --transition-speed: 0.5s;
         }
         /* Smooth transitions for themeable elements */
@@ -55,7 +55,7 @@
         }
     </style>
 </head>
-<body class="bg-black min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col">
 
     <link id="heading-font-loader" rel="stylesheet" href="">
     <link id="body-font-loader" rel="stylesheet" href="">
@@ -167,14 +167,15 @@
             const bodyFontLoader = document.getElementById('body-font-loader');
             const tertiaryFontLoader = document.getElementById('tertiary-font-loader');
             const ctaButton = document.getElementById('cta-button');
+            const themeDashboard = document.getElementById('theme-dashboard'); // New reference
 
             // --- State and Constants ---
             let fontsList = [];
             
             // Individual Lock States for Colors
             const lockStates = {
-                // Background is locked to true as requested, ensuring it stays black.
-                background: true, 
+                // Background is now initially UNLOCKED (false) so it can change in the generator.
+                background: false, 
                 cardBackground: false,
                 textPrimary: false,
                 textSecondary: false,
@@ -202,12 +203,12 @@
                 if (targetId.includes('color-toggle')) {
                     // Color lock
                     const colorName = e.target.getAttribute('data-color');
-                    // Prevent unlocking the background once set to true
-                    if (colorName === 'background' && !e.target.checked) {
-                         e.target.checked = true; // Force it to stay checked/locked
-                         return;
-                    }
+                    
+                    // Allow all colors, including background, to be toggled
                     lockStates[colorName] = e.target.checked;
+
+                    // After state change, re-render the palette to ensure toggle button reflects state correctly
+                    renderColorPalette(lastTheme);
                 }
                 // Font lock states are read directly in generate3Fonts, no state update needed here
             };
@@ -265,7 +266,7 @@
             const generateColors = () => {
                 // Generate a random primary hue and saturation (High saturation for contrast)
                 const primaryH = Math.floor(Math.random() * 360); 
-                // MODIFIED: Increased primary saturation for a more dramatic pop (85-95%)
+                // Increased primary saturation for a more dramatic pop (85-95%)
                 const primaryS = 85 + Math.random() * 10; 
 
                 // Function to generate a random HSL value and convert to Hex
@@ -278,24 +279,32 @@
                 };
 
                 // Determine whether to use a dark or light primary color scheme base
-                // Force dark if background is locked to black (#000000)
-                const isDarkBase = lockStates.background ? true : Math.random() < 0.7; 
+                // Use background lock state to determine base color scheme preference
+                const isDarkBase = lockStates.background ? (lastTheme.background === '#000000' || isColorDark(lastTheme.background)) : Math.random() < 0.7; 
+
+                // Check if a hex color is "dark"
+                function isColorDark(hex) {
+                    const r = parseInt(hex.slice(1, 3), 16);
+                    const g = parseInt(hex.slice(3, 5), 16);
+                    const b = parseInt(hex.slice(5, 7), 16);
+                    // Calculates luminance
+                    return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.5;
+                }
 
                 // CORE LOGIC: Enforce dramatic contrast
                 
-                // Background is now permanently locked to lastTheme.background (#000000)
                 const newBackground = lockStates.background ? lastTheme.background : (
-                    // MODIFIED: Increased saturation (10%) and lightness (min 10) for less "generic" dark base
+                    // Increased saturation (10%) and lightness (min 10) for less "generic" dark base
                     isDarkBase ? hslToHex(primaryH, 10, 10 + Math.random() * 5) : hslToHex(primaryH, 5, 90 + Math.random() * 5)
                 );
                 const newCardBackground = lockStates.cardBackground ? lastTheme.cardBackground : (
-                    // MODIFIED: Increased saturation (15%) and lightness (min 15) for better contrast
+                    // Increased saturation (15%) and lightness (min 15) for better contrast
                     isDarkBase ? hslToHex(primaryH, 15, 15 + Math.random() * 5) : hslToHex(primaryH, 5, 95 + Math.random() * 5)
                 );
 
                 // Text: Highly contrasting against the background.
                 const newTextPrimary = lockStates.textPrimary ? lastTheme.textPrimary : (
-                    // MODIFIED: Increased saturation (20%) for more hue influence, and slight lightness drop (90)
+                    // Increased saturation (20%) for more hue influence, and slight lightness drop (90)
                     isDarkBase ? hslToHex(primaryH, 20, 90) : hslToHex(primaryH, 10, 10)
                 );
                 const newTextSecondary = lockStates.textSecondary ? lastTheme.textSecondary : (
@@ -391,8 +400,8 @@
                 root.style.setProperty('--primary', theme.primary);
                 root.style.setProperty('--accent', theme.accent);
 
-                // Update Body/Main background
-                document.body.style.backgroundColor = theme.background;
+                // Update theme dashboard background (NOT the entire body)
+                themeDashboard.style.backgroundColor = theme.background;
 
                 // Update Colors Row
                 renderColorPalette(theme);
@@ -429,13 +438,14 @@
                 ];
 
                 colors.forEach(color => {
-                    // Check the initial or current lock state
+                    // Get the current lock state from the global lockStates object
                     const isLocked = lockStates[color.name]; 
 
                     const div = document.createElement('div');
                     div.className = 'color-block-container';
-                    // Disable the checkbox if the background is locked (to prevent accidental uncheck)
-                    const isDisabled = color.name === 'background' && isLocked;
+                    
+                    // No color is disabled now, so remove the isDisabled logic
+                    const isDisabled = false;
 
                     div.innerHTML = `
                         <div class="w-16 h-16 rounded-lg ring-2 ring-gray-700 hover:ring-white transition-all cursor-pointer mb-1" style="background-color: ${color.var};"></div>
@@ -450,10 +460,8 @@
                     `;
                     paletteContainer.appendChild(div);
                     
-                    // Attach click listener to the newly created checkbox (only if not disabled)
-                    if (!isDisabled) {
-                        document.getElementById(`${color.name}-color-toggle`).addEventListener('change', handleLockToggle);
-                    }
+                    // Attach the listener directly to the new checkbox element for the visual update to work
+                    document.getElementById(`${color.name}-color-toggle`).addEventListener('change', handleLockToggle);
                 });
             };
 
@@ -498,18 +506,17 @@
                 generateThemeBtn.addEventListener('click', generateTheme);
                 copyCssBtn.addEventListener('click', copyCss);
 
-                // Attach listeners for font toggles
+                // Attach listeners for font toggles (colors are handled in renderColorPalette)
                 document.getElementById('heading-font-toggle').addEventListener('change', handleLockToggle);
                 document.getElementById('body-font-toggle').addEventListener('change', handleLockToggle);
                 document.getElementById('tertiary-font-toggle').addEventListener('change', handleLockToggle);
             };
 
             const init = () => {
-                attachListeners();
-                
                 // Initial load: fetch fonts and generate default theme
                 fetchFonts();
                 applyTheme(lastTheme); 
+                attachListeners();
             };
             
             init();
