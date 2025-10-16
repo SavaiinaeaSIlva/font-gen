@@ -411,13 +411,21 @@
                 // background as a swatch and use the generated cardBackground for panels.
                 root.style.setProperty('--background', '#000000');
                 root.style.setProperty('--card-background', theme.cardBackground);
+
+                // Ensure the actual page stays pure black and the dashboard is transparent
+                // so only panels (which use --card-background) change color.
+                try {
+                    document.body.style.backgroundColor = '#000000';
+                    if (themeDashboard) themeDashboard.style.backgroundColor = 'transparent';
+                } catch (e) {
+                    // ignore in environments where DOM is restricted
+                }
                 root.style.setProperty('--text-primary', theme.textPrimary);
                 root.style.setProperty('--text-secondary', theme.textSecondary);
                 root.style.setProperty('--primary', theme.primary);
                 root.style.setProperty('--accent', theme.accent);
 
-                // Use card background for the main panel surfaces, keep page black
-                themeDashboard.style.backgroundColor = theme.cardBackground;
+                // Use card background for panels; keep the main dashboard tied to --background (pure black)
                 renderColorPalette(theme);
 
                 ctaButton.style.backgroundColor = theme.primary;
