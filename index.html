@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>This shit should be free</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            --transition-speed: 0.5s;
+        }
+        /* Smooth transitions for all themeable elements */
+        #website-preview, #website-preview nav, #website-preview h1, #website-preview h2, #website-preview h3, #website-preview p, #website-preview a, #website-preview footer, #preview-cta-btn {
+            transition: color var(--transition-speed) ease, background-color var(--transition-speed) ease, border-color var(--transition-speed) ease;
+        }
+        /* Style for the dynamic font loader links */
+        #heading-font-loader, #body-font-loader {
+            display: none;
+        }
+        .code-block {
+            /* Black background for code block, simple border */
+            background-color: #141414; 
+            border: 1px solid #333333;
+        }
+        /* Custom Message Box styles */
+        #message-box {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-20px);
+            transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
+        }
+        #message-box.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="bg-gray-900">
+
+    <!-- Dynamically loaded font stylesheets -->
+    <link id="heading-font-loader" rel="stylesheet" href="">
+    <link id="body-font-loader" rel="stylesheet" href="">
+
+    <!-- Custom Message Box (Replaces alert()) -->
+    <div id="message-box" class="p-4 rounded-lg shadow-xl text-sm max-w-sm" role="alert">
+        <div id="message-content" class="text-white"></div>
+    </div>
+
+    <!-- Controls Panel -->
+    <header class="bg-gray-800 p-4 border-b border-gray-900 sticky top-0 z-10">
+        <div class="container mx-auto flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <h1 class="text-2xl font-bold text-white">This shit should be free</h1>
+                <button id="generate-theme-btn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-5 rounded-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:opacity-50" disabled>
+                    Generate Look
+                </button>
+            </div>
+            <!-- API KEY INPUT FIELD REMOVED FOR NETLIFY SECURITY -->
+            <div class="flex items-center text-sm text-gray-400">
+                <p>Fonts powered by Netlify Functions proxy.</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Live Website Preview -->
+    <main id="website-preview" class="text-gray-300">
+        <!-- Navigation -->
+        <nav id="preview-nav" class="py-5">
+            <div class="container mx-auto flex justify-between items-center px-6">
+                <h2 id="preview-logo" class="text-xl font-bold">ThemeCo</h2>
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="#" class="preview-nav-link text-sm font-medium hover:opacity-80">Home</a>
+                    <a href="#" class="preview-nav-link text-sm font-medium hover:opacity-80">About</a>
+                    <a href="#" class="preview-nav-link text-sm font-medium hover:opacity-80">Services</a>
+                    <a href="#" class="preview-nav-link text-sm font-medium hover:opacity-80">Contact</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="text-center py-20 px-6">
+            <h1 id="preview-h1" class="text-5xl md:text-6xl font-extrabold mb-4">Craft Your Perfect Look</h1>
+            <p id="preview-p-hero" class="max-w-2xl mx-auto mb-8 text-lg">This is a live preview of your generated theme. Click "Generate Look" to instantly see a new color scheme and font pairing applied to a realistic website layout.</p>
+            <button id="preview-cta-btn" class="text-lg font-bold px-8 py-4 rounded-lg transition-transform duration-200 hover:scale-105">
+                Call to Action
+            </button>
+        </section>
+
+        <!-- Features Section -->
+        <section class="py-20 px-6">
+            <div class="container mx-auto">
+                <h2 id="preview-h2" class="text-4xl font-bold text-center mb-12">Why This Works</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Feature Card 1 -->
+                    <div class="preview-card p-8 rounded-xl">
+                        <h3 class="preview-h3 text-2xl font-semibold mb-3">Harmonious Colors</h3>
+                        <p class="preview-p-card">The color system is generated using algorithms that ensure contrast and visual appeal, providing a solid foundation.</p>
+                    </div>
+                    <!-- Feature Card 2 -->
+                    <div class="preview-card p-8 rounded-xl">
+                        <h3 class="preview-h3 text-2xl font-semibold mb-3">Elegant Typography</h3>
+                        <p class="preview-p-card">We pair a distinct heading font with a readable body font from Google's most popular selections for a professional feel.</p>
+                    </div>
+                    <!-- Feature Card 3 -->
+                    <div class="preview-card p-8 rounded-xl">
+                        <h3 class="preview-h3 text-2xl font-semibold mb-3">Ready to Use</h3>
+                        <p class="preview-p-card">Scroll down to find the generated CSS variables. Just copy and paste them directly into your project's stylesheet.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Code Snippets Section -->
+        <section class="bg-gray-900 py-16">
+            <div class="container mx-auto px-6">
+                <div class="max-w-3xl mx-auto">
+                    <h2 class="text-3xl font-bold text-white text-center mb-8">Grab Your Code</h2>
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-lg font-semibold text-indigo-300">CSS Variables</h3>
+                        <button id="copy-css-btn" class="text-sm bg-gray-700 hover:bg-gray-600 text-white py-1 px-3 rounded-md">Copy</button>
+                    </div>
+                    <pre class="code-block text-sm p-4 rounded-lg overflow-x-auto"><code id="css-code">:root {
+    /* Colors */
+    --background: #0a0a0a;
+    --card-background: #141414;
+    --text-primary: #ffffff;
+    --text-secondary: #cccccc;
+    --primary: #4fd1c5;
+    --accent: #f6ad55;
+    
+    /* Fonts */
+    --font-heading: 'Inter', sans-serif;
+    --font-body: 'Inter', sans-serif;
+}</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer id="preview-footer" class="py-8">
+            <div class="container mx-auto px-6 text-center">
+                <p class="text-sm">&copy; 2025 ThemeCo. All rights reserved.</p>
+            </div>
+        </footer>
+    </main>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global variables provided by the environment
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        
+        // Set Firebase logging for debug
+        setLogLevel('debug');
+
+        // Firestore Paths (Private User Data)
+        const LAST_THEME_PATH = (userId) => doc(db, 'artifacts', appId, 'users', userId, 'settings', 'last_theme');
+
+        // Default Theme (Pure Black, High Contrast - for simple, dark aesthetic)
+        const defaultTheme = {
+            background: '#0a0a0a',
+            cardBackground: '#141414',
+            textPrimary: '#ffffff',
+            textSecondary: '#cccccc',
+            primary: '#4fd1c5', // Teal/Cyan
+            accent: '#f6ad55', // Orange/Amber
+            headingFont: 'Inter',
+            bodyFont: 'Inter'
+        };
+
+        // --- CUSTOM MESSAGE BOX ---
+        const messageBox = document.getElementById('message-box');
+        const messageContent = document.getElementById('message-content');
+        let messageTimeout;
+
+        const showMessage = (text, type = 'info') => {
+            clearTimeout(messageTimeout);
+            
+            let bgColor;
+            if (type === 'success') {
+                bgColor = 'bg-emerald-600';
+            } else if (type === 'error') {
+                bgColor = 'bg-red-600';
+            } else {
+                bgColor = 'bg-indigo-600';
+            }
+
+            messageBox.className = `p-4 rounded-lg shadow-xl text-sm max-w-sm show ${bgColor}`;
+            messageContent.textContent = text;
+            
+            messageTimeout = setTimeout(() => {
+                messageBox.classList.remove('show');
+            }, 3000);
+        };
+
+        // --- MAIN APP LOGIC ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM Elements
+            const generateThemeBtn = document.getElementById('generate-theme-btn');
+            const cssCode = document.getElementById('css-code');
+            const copyCssBtn = document.getElementById('copy-css-btn');
+            const headingFontLoader = document.getElementById('heading-font-loader');
+            const bodyFontLoader = document.getElementById('body-font-loader');
+            const websitePreview = document.getElementById('website-preview');
+
+            // App State
+            let fontsList = [];
+            let userId = null; 
+
+            // --- FONT API CALLS NOW HIT THE PROXY ---
+            const fetchFonts = async () => {
+                if (fontsList.length > 0) return; // Only fetch fonts once
+                
+                generateThemeBtn.disabled = true;
+                generateThemeBtn.textContent = "Fetching Fonts via Proxy...";
+
+                // This endpoint corresponds to the Netlify Function URL
+                const proxyEndpoint = '/.netlify/functions/get-fonts'; 
+
+                try {
+                    let response;
+                    let success = false;
+                    for (let i = 0; i < 3; i++) { 
+                        try {
+                            // Call the secure Netlify Function (Proxy)
+                            response = await fetch(proxyEndpoint);
+                            if (response.ok) {
+                                success = true;
+                                break;
+                            }
+                        } catch (e) {
+                            console.warn(`Proxy fetch attempt ${i + 1} failed, retrying...`);
+                        }
+                        await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
+                    }
+
+                    if (!success || !response.ok) throw new Error(`Proxy Error: ${response.status}`);
+                    
+                    const data = await response.json();
+                    fontsList = data.items.slice(0, 300) || []; 
+                    
+                    if (fontsList.length === 0) {
+                        showMessage('Proxy returned no fonts. Check Netlify function logs.', 'error');
+                    } else {
+                        showMessage(`Successfully loaded ${fontsList.length} fonts via secure proxy.`, 'success');
+                    }
+                    
+                } catch (error) {
+                    console.error('Error fetching fonts:', error);
+                    showMessage('Failed to fetch fonts. Check Netlify function logs and API key setup.', 'error');
+                    fontsList = [];
+                } finally {
+                    generateThemeBtn.disabled = false;
+                    generateThemeBtn.textContent = "Generate Look";
+                }
+            };
+            
+            // --- THEME STORAGE (FIRESTORE) ---
+            const saveCurrentTheme = async (theme) => {
+                 if (!userId) return;
+                 try {
+                     await setDoc(LAST_THEME_PATH(userId), theme);
+                 } catch (e) {
+                     console.error('Error saving last theme:', e);
+                 }
+            };
+
+            const loadLastTheme = async () => {
+                 if (!userId) {
+                     applyTheme(defaultTheme);
+                     return;
+                 } 
+
+                 try {
+                     const docSnap = await getDoc(LAST_THEME_PATH(userId));
+                     if (docSnap.exists()) {
+                         applyTheme(docSnap.data());
+                         showMessage('Last saved theme loaded.', 'info');
+                     } else {
+                         applyTheme(defaultTheme);
+                     }
+                 } catch (e) {
+                     console.error('Error loading last theme:', e);
+                     applyTheme(defaultTheme);
+                 }
+            };
+
+
+            // --- CORE THEME LOGIC ---
+            const generateTheme = () => {
+                if (fontsList.length < 2) {
+                    // Force a fetch if not attempted, otherwise apply default
+                    if (fontsList.length === 0) {
+                        fetchFonts();
+                        return showMessage('Attempting to fetch fonts now. Please wait and try again.', 'info');
+                    }
+                    applyTheme(defaultTheme); 
+                    return showMessage('Font list not available, using default fonts.', 'error');
+                }
+                
+                const colors = generateColors();
+                const fonts = generateFonts();
+                
+                const theme = { ...colors, ...fonts };
+                applyTheme(theme);
+                saveCurrentTheme(theme);
+            };
+
+            // This function ensures generated colors always contrast sharply against a dark background
+            const generateColors = () => {
+                const h = Math.floor(Math.random() * 360);
+                const s = 70 + Math.random() * 15; // Saturation 70-85% for pop
+                const l = 55 + Math.random() * 15; // Lightness 55-70% for bright accents
+                
+                return {
+                    primary: hslToHex(h, s, l),
+                    accent: hslToHex((h + 150) % 360, s, l), 
+                    background: hslToHex(0, 0, 4), // Near black
+                    cardBackground: hslToHex(0, 0, 8), // Slightly lighter near black
+                    textPrimary: hslToHex(0, 0, 98), // Near white
+                    textSecondary: hslToHex(0, 0, 75), // Light gray
+                };
+            };
+
+            const generateFonts = () => {
+                if (fontsList.length < 2) return { headingFont: 'Inter', bodyFont: 'Inter' };
+                const headingIndex = Math.floor(Math.random() * fontsList.length);
+                let bodyIndex;
+                do {
+                    bodyIndex = Math.floor(Math.random() * fontsList.length);
+                } while (bodyIndex === headingIndex);
+
+                return {
+                    headingFont: fontsList[headingIndex].family,
+                    bodyFont: fontsList[bodyIndex].family
+                };
+            };
+
+            // --- APPLYING THEME & UPDATING UI ---
+            const applyTheme = (theme) => {
+                const root = document.documentElement;
+                
+                // Apply colors via CSS Variables for global effect
+                root.style.setProperty('--background', theme.background);
+                root.style.setProperty('--card-background', theme.cardBackground);
+                root.style.setProperty('--text-primary', theme.textPrimary);
+                root.style.setProperty('--text-secondary', theme.textSecondary);
+                root.style.setProperty('--primary', theme.primary);
+                root.style.setProperty('--accent', theme.accent);
+
+                // Apply styles to preview elements
+                document.body.style.backgroundColor = theme.background; 
+                websitePreview.style.backgroundColor = theme.background;
+                document.getElementById('preview-logo').style.color = theme.textPrimary;
+                document.getElementById('preview-h1').style.color = theme.textPrimary;
+                document.getElementById('preview-h2').style.color = theme.textPrimary;
+                document.getElementById('preview-p-hero').style.color = theme.textSecondary;
+                document.querySelectorAll('.preview-nav-link').forEach(el => el.style.color = theme.textSecondary);
+                document.querySelectorAll('.preview-h3').forEach(el => el.style.color = theme.textPrimary);
+                document.querySelectorAll('.preview-p-card').forEach(el => el.style.color = theme.textSecondary);
+                document.querySelectorAll('.preview-card').forEach(el => el.style.backgroundColor = theme.cardBackground);
+                
+                const ctaBtn = document.getElementById('preview-cta-btn');
+                ctaBtn.style.backgroundColor = theme.primary;
+                ctaBtn.style.color = theme.cardBackground; // Ensure button text is dark/readable on bright primary color
+                ctaBtn.onmouseover = () => ctaBtn.style.backgroundColor = theme.accent;
+                ctaBtn.onmouseout = () => ctaBtn.style.backgroundColor = theme.primary;
+
+                document.getElementById('preview-footer').style.color = theme.textSecondary;
+
+                // Load and apply fonts
+                loadAndApplyFont('heading', theme.headingFont);
+                loadAndApplyFont('body', theme.bodyFont);
+                
+                // Apply font families directly to elements for preview
+                const headingStyle = `'${theme.headingFont}', sans-serif`;
+                document.getElementById('preview-logo').style.fontFamily = headingStyle;
+                document.getElementById('preview-h1').style.fontFamily = headingStyle;
+                document.getElementById('preview-h2').style.fontFamily = headingStyle;
+                document.querySelectorAll('.preview-h3').forEach(el => el.style.fontFamily = headingStyle);
+
+                const bodyStyle = `'${theme.bodyFont}', sans-serif`;
+                document.getElementById('preview-p-hero').style.fontFamily = bodyStyle;
+                document.querySelectorAll('.preview-nav-link').forEach(el => el.style.fontFamily = bodyStyle);
+                document.querySelectorAll('.preview-p-card').forEach(el => el.style.fontFamily = bodyStyle);
+                document.getElementById('preview-footer').style.fontFamily = bodyStyle;
+                
+                updateCodeSnippets(theme);
+            };
+            
+            const loadAndApplyFont = (type, family) => {
+                if (family === 'Inter') return; 
+                
+                const loader = type === 'heading' ? headingFontLoader : bodyFontLoader;
+                loader.href = `https://fonts.googleapis.com/css2?family=${family.replace(/ /g, '+')}:wght@400;700;800&display=swap`;
+            };
+
+            const updateCodeSnippets = (theme) => {
+                cssCode.textContent = `:root {
+    /* Colors */
+    --background: ${theme.background};
+    --card-background: ${theme.cardBackground};
+    --text-primary: ${theme.textPrimary};
+    --text-secondary: ${theme.textSecondary};
+    --primary: ${theme.primary};
+    --accent: ${theme.accent};
+    
+    /* Fonts */
+    --font-heading: '${theme.headingFont}', sans-serif;
+    --font-body: '${theme.bodyFont}', sans-serif;
+}`;
+            };
+
+            const copyCss = () => {
+                const codeToCopy = cssCode.textContent;
+                const textarea = document.createElement('textarea');
+                textarea.value = codeToCopy;
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    showMessage('CSS Variables copied to clipboard!', 'success');
+                } catch (err) {
+                    console.error('Failed to copy CSS: ', err);
+                    showMessage('Failed to copy. Please copy manually.', 'error');
+                }
+                document.body.removeChild(textarea);
+            };
+
+            // --- UTILITY ---
+            const hslToHex = (h, s, l) => {
+                s /= 100; l /= 100;
+                const k = n => (n + h / 30) % 12;
+                const a = s * Math.min(l, 1 - l);
+                const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1));
+                return "#" + [8, 4, 0].map(n => Math.round(f(n) * 255).toString(16).padStart(2, '0')).join('');
+            };
+
+            // --- INITIALIZATION FLOW ---
+            const initApp = async () => {
+                try {
+                    generateThemeBtn.disabled = true;
+
+                    // 1. Authenticate user to get userId for Firestore theme saving
+                    let userCredential;
+                    if (initialAuthToken) {
+                        userCredential = await signInWithCustomToken(auth, initialAuthToken);
+                    } else {
+                        userCredential = await signInAnonymously(auth);
+                    }
+                    userId = userCredential.user.uid;
+                    
+                    generateThemeBtn.disabled = false;
+
+                    // 2. Fetch fonts immediately using the *secure proxy*
+                    await fetchFonts();
+
+                    // 3. Load user-specific data (last theme)
+                    await loadLastTheme();
+                    
+                } catch (e) {
+                    console.error("Critical Initialization Error (Auth/Data Load):", e);
+                    showMessage("Failed to start session. Using default theme.", 'error');
+                    applyTheme(defaultTheme);
+                }
+            };
+
+            // Event Listeners
+            generateThemeBtn.addEventListener('click', generateTheme);
+            copyCssBtn.addEventListener('click', copyCss);
+            
+            // Initial Load
+            initApp();
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,8 @@
+{
+  "name": "theme-forge-netlify",
+  "version": "1.0.0",
+  "description": "Secure font theme generator using Netlify Functions.",
+  "dependencies": {
+    "node-fetch": "^2.6.1"
+  }
+}
